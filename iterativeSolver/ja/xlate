@@ -1,0 +1,644 @@
+<(dblquad)Requires at least five inputs
+>(dblquad)少なくとも、5つの入力が必要です
+<(fmin)fmin requires three input arguments.
+>(fmin)fminは3つの入力引数が必要です
+<(fminbnd)         - increase MaxFunEvals option.
+>(fminbnd)         - MaxfunEvals オプションを増加
+<(fminbnd)         - increase MaxIter option.
+>(fminbnd)         - MaxIter オプションを増加
+<(fminbnd)         Current function value: %f \n
+>(fminbnd)         現在の関数値: %f \n
+<(fminbnd)Exiting: Maximum number of function evaluations has been exceeded
+>(fminbnd)終了: 関数評価の繰り返し回数が、設定した最大回数を超過しました
+<(fminbnd)Exiting: Maximum number of iterations has been exceeded
+>(fminbnd)終了: 繰り返し回数が、設定した最大回数を超過しました
+<(fminbnd)fminbnd requires three input arguments.
+>(fminbnd)fminbndは3つの入力引数が必要です
+<(fmins)initial
+>(fmins)初期化
+<(fzero)    because NaN or Inf function value encountered during search 
+>(fzero)    検索中にNaN、またはInfが見つかりました
+<(fzero)    because complex function value encountered during search 
+>(fzero)    検索中に複素関数値が見つかりました
+<(fzero)Check function or try again with a different starting value.
+>(fzero)関数を確認するか、初期値を変更して再試行してみてください
+<(fzero)DISPERR (in FZERO) called with invalid argument.
+>(fzero)正しくない引数でDISPERR(FZERO中)関数が呼ばれました
+<(fzero)Function value at starting guess must be finite and real.
+>(fzero)関数の初期推定値は有界な実数である必要があります
+<(fzero)Function values at interval endpoints must be finite and real.
+>(fzero)関数の内部終点は有界な実数である必要があります
+<(fzero)Second argument must be finite.
+>(fzero)2番目の引数は有界である必要があります
+<(fzero)Second argument must be of length 1 or 2.
+>(fzero)2番目の引数は1、または2である必要があります
+<(fzero)The function values at the interval endpoints must differ in sign.
+>(fzero)区間の端点の関数値の符号は異なる必要があります
+<(fzero)Zero find terminated successfully
+>(fzero)零点が正常に見つかりました
+<(fzero)Zero find terminated successfully.
+>(fzero)零点が正常に見つかりました
+<(ode113)AbsTol must be positive.
+>(ode113)AbsTolは正の値である必要があります
+<(ode113)First argument must be a single-quoted string.  See ODE113.
+>(ode113)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE113を参照
+<(ode113)Not enough input arguments.  See ODE113.
+>(ode113)入力引数が十分でありません。  ODE113を参照
+<(ode113)Option 'InitialStep' must be greater than zero.
+>(ode113)オプション"InitialStep"はゼロ以上である必要があります
+<(ode113)Option 'MaxStep' must be greater than zero.
+>(ode113)オプション"MaxStep"はゼロ以上である必要があります
+<(ode113)RelTol must be a positive scalar.
+>(ode113)RelTolは正のスカラである必要があります
+<(ode113)Solving with NormControl 'on' requires a scalar AbsTol.
+>(ode113)NormControlを"on"状態で解くには、スカラAbsTolが必要です
+<(ode15s)First argument must be a single-quoted string.  See ODE15S.
+>(ode15s)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE１５Ｓを参照
+<(ode15s)Not enough input arguments.  See ODE15S.
+>(ode15s)入力引数が十分でありません。  ODE１５Ｓを参照
+<(ode15s)The mass matrix must have some non-zero entries.
+>(ode15s)質量行列は非ゼロエントリーをもつ必要があります
+<(ode23)First argument must be a single-quoted string.  See ODE23.
+>(ode23)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE23を参照
+<(ode23)Not enough input arguments.  See ODE23.
+>(ode23)入力引数が十分でありません。  ＯＤＥ２３を参照
+<(ode23s)First argument must be a single-quoted string.  See ODE23S.
+>(ode23s)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE23Sを参照
+<(ode23s)Not enough input arguments.  See ODE23S.
+>(ode23s)入力引数が十分でありません。  ODE23Sを参照
+<(ode23t)First argument must be a single-quoted string.  See ODE23T.
+>(ode23t)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE23Tを参照
+<(ode23t)Not enough input arguments.  See ODE23T.
+>(ode23t)入力引数が十分でありません。  ODE23Tを参照
+<(ode23tb)First argument must be a single-quoted string.  See ODE23TB.
+>(ode23tb)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE23TBを参照
+<(ode23tb)Not enough input arguments.  See ODE23TB.
+>(ode23tb)入力引数が十分でありません。  ODE23TBを参照
+<(ode45)First argument must be a single-quoted string.  See ODE45.
+>(ode45)最初の引数はシングルコートで囲まれた文字列である必要があります。  ODE45を参照
+<(ode45)Not enough input arguments.  See ODE45.
+>(ode45)入力引数が十分でありません。  ODE45を参照
+<(odeget)Ambiguous property name '%s' 
+>(odeget)あいまいなプロパティ名 '%s'
+<(odeget)First argument must be an options structure created with ODESET.
+>(odeget)最初の引数はODESETで作成されたオプション構造である必要があります
+<(odeset)Arguments must occur in name-value pairs.
+>(odeset)引数は名前-値の組み合わせでなければなりません。
+<(odeset)Expected argument %d to be a string property name.
+>(odeset)引数 %d は文字列のプロパティ名が必要です。
+<(odeset)Unrecognized property name '%s'.
+>(odeset)プロパティ名 '%s' が認識されません。
+<(optimget)First argument must be an options structure created with OPTIMSET.
+>(optimget)最初の引数はOPTIMSETで作成されたオプション構造である必要があります
+<(quad)Recursion level limit reached %d times.
+>(quad)再帰による繰り返し回数が制限 %d回に達しました
+<(symvar)Quotes in S are not in pairs.
+>(symvar)SのQuotesがペアではありません
+<(fminbnd)FMINBND only accepts inputs of data type double.
+>(fminbnd)FMINBNDはdoubleデータタイプの入力のみを受け付けます
+<(fminsearch)FMINSEARCH only accepts inputs of data type double.
+>(fminsearch)FMINSEARCHはdoubleデータタイプの入力のみを受け付けます
+<(fminsearch)FMINSEARCH requires at least two input arguments
+>(fminsearch)FMINSEARCHは少なくとも2つの入力引数が必要です
+<(fzero)FZERO only accepts inputs of data type double.
+>(fzero)FZEROはdoubleデータタイプの入力のみを受け付けます
+<(fzero)FZERO requires at least two input arguments
+>(fzero)FZEROは少なくとも2つの入力引数が必要です
+%
+<(odeset)Expected argument %d to be a string property name or an options structure\ncreated with ODESET.
+>(odeset)引数 %d は、ODESET で作成された文字列のプロパティ名か、オプションの構造体\nであることを想定しています。
+<(odeset)Expected value for property '%s'.
+>(odeset)プロパティ '%s' に対する値が必要です。
+%
+<(fminsearch)Option 'MaxFunEvals' must be an integer value if not the default.
+>(fminsearch)オプション 'MaxFunEvals' は、デフォルトでない場合は整数値でなければなりません。
+<(fminsearch)Option 'MaxIter' must be an integer value if not the default.
+>(fminsearch)オプション 'MaxIter' は、デフォルトでない場合は整数値でなければなりません。
+<(fminsearch)Exiting: Maximum number of function evaluations has been exceeded\n         - increase MaxFunEvals option.\n         Current function value: %f \n
+>(fminsearch)終了中: 関数評価の最大数を超えました。\n         - MaxFunEvalsオプションの値を増やしてください。\n         カレントの関数値: %f \n
+<(fminsearch)Optimization terminated:\n the current x satisfies the termination criteria using OPTIONS.TolX of %e \ and F(X) satisfies the convergence criteria using OPTIONS.TolFun of %e \n
+>(fminsearch)最適化が終了しました:\n カレント x は %e の OPTIONS.TolX を使って終了基準を満たし、\ F(x) は %e の OPTIONS.TolFun を使って収束基準を満たします。\n
+<(fminsearch)Unknown state in CALLOUTPUTFCN.
+>(fminsearch)CALLOUTPUTFCN に不明な状態があります。
+<(fminsearch)Optimization terminated prematurely by user.
+>(fminsearch)最適化はユーザによって中断されました。
+<(fminsearch)User function '%s' returned NaN when evaluated;\n FMINSEARCH cannot continue.
+>(fminsearch)ユーザ関数 '%s' は評価時に NaN を出力しました;\n FMINSEARCH を続けられません。
+<(fminsearch)User function '%s' returned a complex value when evaluated;\n FMINSEARCH cannot continue.
+>(fminsearch)ユーザ関数 '%s' は評価時に複素数値を出力しました;\n FMINSEARCH を続けられません。
+
+<(ddesd)DDEs must return column vectors.
+>(ddesd)DDE は列ベクトルを返さなければなりません。
+<(ddesd)Derivative and history vectors have different lengths.
+>(ddesd)微分と履歴ベクトルは異なる長さをもっています。
+<(ddesd)Failure at t=%e.  Unable to meet integration tolerances without\n reducing the step size below the smallest value allowed (%e) at time t.
+>(ddesd)t=%e で失敗。 時間 t で最小の値で許可された (%e) より小さい\nステップサイズに減らさずに積分の許容誤差を満たすことができません。
+<(ddesd)HISTORY must be a constant vector, DDESD solution structure or a function handle.
+>(ddesd)HISTORY は定数ベクトル、DDESD の解の構造体、あるいは関数ハンドルでなければなりません。
+<(ddesd)JUMPS option is not available in DDESD. Solve the problem by restarting at each entry of JUMPS.
+>(ddesd)JUMPS オプションは、DDESD で利用できません。 JUMPS の各入力で再開することで問題を解いてください。
+<(ddesd)Mixture of single and double data for 't0', 'y0', 'y(d(t0,y0))', and 'f(t0,y0,ylags)' in call to DDESD.
+>(ddesd)DDESD への呼び出し内に、't0', 'y0', 'y(d(t0,y0))', 'f(t0,y0,ylags)' に対する single と double のデータが混在しています。
+<(ddesd)Must continue from last point reached.
+>(ddesd)最後に達した点から連続でなければなりません。
+<(ddesd)Must have tspan(1) < tspan(end).
+>(ddesd)tspan(1) < tspan(end) でなければなりません。
+<(ddesd)Not enough input arguments. See DDESD.
+>(ddesd)入力引数が足りません。 DDESD を参照してください。
+<(ddesd)Option 'AbsTol' must be positive.
+>(ddesd)オプション 'AbsTol' は正でなければなりません。
+<(ddesd)Option 'Events' must be a function handle.
+>(ddesd)オプション 'Events' は関数ハンドルでなければなりません。
+<(ddesd)Option 'OutputFcn' must be a function handle.
+>(ddesd)オプション 'OutputFcn' は関数ハンドルでなければなりません。
+<(ddesd)Option 'RelTol' must be a positive scalar.
+>(ddesd)オプション 'RelTol' は正のスカラでなければなりません。
+<(ddesd)RelTol has been increased to %g.
+>(ddesd)RelTol は %g に増加しました。
+<(ddesd)Solving %s requires a scalar AbsTol, or a vector AbsTol of length %d
+>(ddesd)解 %s は、スカラの AbsTol、あるいは長さ %d のベクトルの AbsTol が必要です。
+<(ddesd)The first argument, DDEFUN, must be a function handle.
+>(ddesd)1番目の引数、DDEFUN は関数ハンドルでなければなりません。
+<(ddesd)The second argument, DELAYS, must be either a function handle or a constant vector.
+>(ddesd)2番目の引数、DELAYS は関数ハンドルか、定数ベクトルのいずれかでなければなりません。
+<(fminbnd)Optimization terminated:\n the current x satisfies the termination criteria using OPTIONS.TolX of %e \n
+>(fminbnd)最適化が終了しました:\n 現在の x は %e の OPTIONS.TolX を使って終了基準を満たします。 \n
+
+<(odearguments)Mixture of single and double data for 't0', 'y0', 'yp0', and 'f(t0,y0,yp0)' in call to %s.
+>(odearguments)%s への呼び出し内で 't0', 'y0', 'yp0', 'f(t0,y0,yp0)' に対する single と double のデータが混在しています。
+<(odearguments)Mixture of single and double data for 't0', 'y0', and 'f(t0,y0)' in call to %s.
+>(odearguments)%s への呼び出し内で 't0', 'y0', 'f(t0,y0)' に対する single と double のデータが混在しています。
+<(dde23)Mixture of single and double data for 't0', 'y0', 'y(t0-lags)', and 'f(t0,y0,ylags)' in call to DDE23.
+>(dde23)DDE23 への呼び出し内で 't0', 'y0', 'y(t0-lags)', 'f(t0,y0,ylags)' に対する single と double のデータが混在しています。
+<(odextend)Concatenating single and double outpus of %s.
+>(odextend)%s の single と double の出力を結合しています。
+<(fcnchk)Ambiguous expression or function input.\n The string 'x' will be interpreted as the name of a function called 'x' \n (e.g., x.m) and not as the mathematical expression 'x' (i.e., f(x)=x). \n Use the anonymous function:  @(x)x  if you meant the mathematical expression 'x'.
+>(fcnchk)あいまいな式、または関数入力です。\n 文字列 'x' は、数式 'x' (すなわち f(x)=x) ではなく、'x' で呼び出される\n 関数名 (たとえば x.m) として解釈されます。\n 数式 'x' として扱う場合は、無名関数 @(x)x を使用してください。
+
+%%/devel/Amath/perfect/matlab/toolbox/matlab/funfun/bvpxtend.m
+<(bvpxtend)Cannot extend solution created by solver: %s.
+>(bvpxtend)ソルバ %s で作成した solution を拡張できません。
+<(bvpxtend)Not enough input arguments.  See BVPXTEND.
+>(bvpxtend)入力引数が足りません。BVPXTEND を参照してください。
+<(bvpxtend)Solver information not present in the solution structure. Cannot use extrapolation flag: '%s'.
+>(bvpxtend)ソルバ情報は、solution の構造体に設定されていません。外挿フラグ '%s' を使用できません。
+<(bvpxtend)Unexpected extrapolation method specified: %s.
+>(bvpxtend)予期せぬ外挿法 %s が指定されました。
+<(bvpxtend)XNEW inside the previous interval of integration.
+>(bvpxtend)XNEW は前の積分区間内にあります。
+<(bvpxtend)YNEW must be numeric vector or a string.
+>(bvpxtend)YNEW は、数値ベクトルか文字列でなければなりません。
+
+%%D:\work\A_may12\matlab\toolbox\matlab\funfun\fzero.m
+<(fzero)Current point x may be near a singular point. The interval [%g, %g] \nreduced to the requested tolerance and the function changes sign in the interval,\nbut f(x) increased in magnitude as the interval reduced.
+>(fzero)現在の点 x は特異点に近い可能性があります。 区間 [%g, %g] は、\n要求許容誤差に縮小し、関数はその範囲で符号が変わりますが、\n区間が減るごとに、関数 f(x) の振幅は増加します。
+<(fzero)FZERO cannot continue because user supplied %s ==> %s\nfailed with the error below.\n\n%s 
+>(fzero)ユーザ設定の %s ==> %s は以下のエラーで失敗したため、\nFZERO を続けることができません。\n\n%s
+<(fzero)FZERO cannot continue because user supplied %s \nfailed with the error below.\n\n%s 
+>(fzero)ユーザ設定の %s は以下のエラーで失敗したため、\nFZERO を続けることができません。\n\n%s
+<(fzero)FZERO requires at least two input arguments.
+>(fzero)FZERO は少なくとも2つの入力引数が必要です。
+<(fzero)Search for a zero in the interval [%g, %g]:\n
+>(fzero)区間 [%g, %g] の零点の位置を検索:\n
+<(fzero)Search for an interval around %g containing a sign change:\n
+>(fzero)符号変化を含む区間 %g の周囲を検索:\n
+<(fzero)The input should be either a structure with valid fields or at least two arguments to FZERO.
+>(fzero)入力は、有効なフィールドをもつ構造体か、少なくとも2つの FZERO への引数です。
+<(fzero)Unknown state in CALLOUTPUTANDPLOTFCNS.
+>(fzero)CALLOUTPUTANDPLOTFCNS に不明な状態があります。
+<(fzero)User function '%s' returned NaN when evaluated at %g;\n FZERO cannot continue.
+>(fzero)ユーザ関数 '%s' は %g の計算で NaN を返しました。\n FZERO を続けることができません。
+<(fzero)User function '%s' returned a complex value when evaluated at %g;\n FZERO cannot continue.
+>(fzero)ユーザ関数 '%s' は %g の計算で複素数値を返しました。\n FZERO を続けることができません。
+<(fzero)Zero find terminated.
+>(fzero)零点の検出を終了しました。
+<(fzero)Zero found in the interval [%g, %g]
+>(fzero)零点が区間 [%g, %g] 内で見つかりました。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/bvp4c.m
+<(bvp4c)Singular BVP must be on interval [0, b] with 0 < b.
+>(bvp4c)特異な BVP は、0 < b で区間 [0, b] 上になければなりません。
+<(bvp4c)Solving %s requires a scalar AbsTol, or a vector AbsTol of length %d.
+>(bvp4c)解 %s は、スカラの AbsTol、あるいは長さ %d のベクトルの AbsTol が必要です。
+<(bvp4c)The boundary condition function should return a column vector of length %i
+>(bvp4c)境界条件の関数は、長さ %i の列ベクトルを返す必要があります
+<(bvp4c)The derivative function should return a column vector of length %i
+>(bvp4c)導関数は、長さ %i の列ベクトルを返す必要があります。
+<(bvp4c)The initial profile must be provided as a structure.
+>(bvp4c)初期プロファイルは、構造体として与えられなければなりません。
+<(bvp4c)The maximum residual is %10.3e. \n
+>(bvp4c)最大残差は %10.3e です。\n
+<(bvp4c)The solution was obtained on a mesh of %g points.\n
+>(bvp4c)解は %g 点のメッシュ上で得られました。\n
+<(bvp4c)There were %g calls to the BC function. \n
+>(bvp4c)BC 関数への %g 回の呼び出しがあります。\n
+<(bvp4c)There were %g calls to the ODE function. \n
+>(bvp4c)ODE 関数への %g 回の呼び出しがあります。\n
+<(bvp4c)Unable to meet the tolerance without using more than %d mesh points. \n The last mesh of %d points and the solution are available in the output argument. \n The maximum residual is %g, while requested accuracy is %g.
+>(bvp4c)%d より多いメッシュ点を使用せずに許容誤差を満たすことはできません。\n %d 点の最後のメッシュと解は、出力引数で利用可能です。\n 最大残差は %g で、要求精度は %g です。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/bvpget.m
+<(bvpget)First argument must be an options structure created with BVPSET.
+>(bvpget)1 番目の引数は、BVPSET で作成されるオプション構造体でなければなりません。
+<(bvpget)Unrecognized property name '%s'.  See BVPSET for possibilities.
+>(bvpget)プロパティ名 '%s' が認識されません。可能性については BVPSET を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/bvpinit.m
+<(bvpinit)Did not specify [ANEW BNEW] in BVPINIT(SOL,[ANEW BNEW]).
+>(bvpinit)BVPINIT(SOL,[ANEW BNEW]) に [ANEW BNEW] を指定していません。
+<(bvpinit)The entries of x must satisfy a = x(1) < x(2) < ... < x(end) = b.
+>(bvpinit)x の入力は a = x(1) < x(2) < ... < x(end) = b を満たさなければなりません。
+<(bvpinit)The entries of x must satisfy a = x(1) > x(2) > ... > x(end) = b.
+>(bvpinit)x の入力は a = x(1) > x(2) > ... > x(end) = b を満たさなければなりません。
+<(bvpinit)The entries of x must satisfy a = x(1) ~= x(end) = b.
+>(bvpinit)x の入力は a = x(1) ~= x(end) = b を満たさなければなりません。
+<(bvpinit)The guess for the solution must return a vector.
+>(bvpinit)解に対する推定はベクトルを返さなければなりません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/bvpset.m
+<(bvpset)Expected argument %d to be a string property name or an options structure\ncreated with BVPSET.
+>(bvpset)引数 %d は、文字列のプロパティ名、または BVPSET で作成されるオプション構造体である必要があります。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/callAllOptimPlotFcns.m
+<(callAllOptimPlotFcns)Close dialog
+>(callAllOptimPlotFcns)ダイアログを閉じる
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/createCellArrayOfFunctions.m
+<(createCellArrayOfFunctions)The field '%s' must contain a function handle.
+>(createCellArrayOfFunctions)フィールド '%s' は関数ハンドルを含む必要があります。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/createProblemStruct.m
+<(createProblemStruct)Unrecognized solver name.
+>(createProblemStruct)ソルバ名が認識されません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/dblquad.m
+<(dblquad)Requires at least five inputs.
+>(dblquad)少なくとも 5 つの入力が必要です。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/dde23.m
+<(dde23)Not enough input arguments. See DDE23.
+>(dde23)入力引数が足りません。DDE23 を参照してください。
+<(dde23)The lags must all be positive.
+>(dde23)ラグはすべて正でなければなりません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ddeget.m
+<(ddeget)First argument must be an options structure created with DDESET.
+>(ddeget)1 番目の引数は、DDESET で作成されるオプション構造体でなければなりません。
+<(ddeget)Unrecognized property name '%s'.  See DDESET for possibilities.
+>(ddeget)プロパティ名 '%s' が認識されません。可能性については DDESET を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ddeset.m
+<(ddeset)Expected argument %d to be a string property name or an options structure\ncreated with DDESET.
+>(ddeset)引数 %d は、文字列のプロパティ名、または DDESET で作成されるオプション構造体である必要があります。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/decic.m
+<(decic)Cannot specify more than %i components of y0 and yp0.
+>(decic)%i より多い y0 と yp0 の要素を指定することはできません。
+<(decic)Convergence failure in DECIC.
+>(decic)収束は DECIC 内で失敗しました。
+<(decic)Index may be greater than one.
+>(decic)インデックスが 1 より大きい可能性があります。
+<(decic)Try freeing %i fixed components.
+>(decic)%i の固定要素を除いてみてください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/deval.m
+<(deval)%s must be a structure returned by a differential equation solver.
+>(deval)%s は微分方程式のソルバで返される構造体でなければなりません。
+<(deval)%s\n         DEVAL will treat %s as an output of the MATLAB R12 version of BVP4C.
+>(deval)%s\n         DEVAL は、BVP4C の MATLAB R12 のバージョンの出力として %s を扱います。
+<(deval)Attempting to evaluate the solution outside the interval\n[%e, %e] where it is defined.\n
+>(deval)定義された [%e, %e] の区間外で解を評価しようとしています。\n
+<(deval)Incorrect solution component requested in %s.
+>(deval)%s で不正な解の要素が要求されました。
+<(deval)Missing 'solver' field in the structure %s.
+>(deval)構造体 %s の 'solver' が見つかりません。
+<(deval)Unrecognized solver name '%s' in %s.solver.
+>(deval)ソルバ名 '%s' (%s.solver) が認識されません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/fminbnd.m
+<(fminbnd)FMINBND requires three input arguments.
+>(fminbnd)FMINBND は 3 つの入力引数が必要です。
+<(fminbnd)Invalid exitflag value in TERMINATE.
+>(fminbnd)TERMINATE 内の exitflag の値が無効です。
+<(fminbnd)The input to FMINBND should be either a structure with valid fields or consist of at least three arguments.
+>(fminbnd)FMINBND への入力は、有効なフィールドをもつ構造体か、少なくとも 3 つの引数で構成される必要があります。
+<(fminbnd)User function '%s' returned NaN when evaluated at %g;\n FMINBND cannot continue.
+>(fminbnd)ユーザ関数 '%s' は、%g における評価時に NaN を返しました。\n FMINBND を続けることができません。
+<(fminbnd)User function '%s' returned a complex value when evaluated at %g;\n FMINBND cannot continue.
+>(fminbnd)ユーザ関数 '%s' は、%g における評価時に複素数値を返しました。\n FMINBND を続けることができません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/inlineeval.m
+<(inlineeval)Error in inline expression ==> %s\n??? %s
+>(inlineeval)インライン式のエラー ==> %s\n??? %s
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode113.m
+<(ode113)Failure at t=%e.  Unable to meet integration tolerances without reducing the step size below the smallest value allowed (%e) at time t.
+>(ode113)t=%e で失敗。時間 t で最小の値で許可された (%e) より小さいステップサイズに減らさずに積分の許容誤差を満たすことができません。
+<(ode113)MassSingular cannot be 'yes' for this solver. See ODE15S or ODE23T.
+>(ode113)MassSingular をこのソルバに対して 'yes' にできません。ODE15S または ODE23T を参照してください。
+<(ode113)ODE113 assumes MassSingular is 'no'. See ODE15S or ODE23T.
+>(ode113)ODE113 は、MassSingular が 'no' であることが必要です。ODE15S または ODE23T を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode15i.m
+<(ode15i)Not enough input arguments.  See ODE15I.
+>(ode15i)入力引数が足りません。ODE15I を参照してください。
+<(ode15i)Option 'NonNegative' will be ignored.
+>(ode15i)オプション 'NonNegative' は無視されます。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode15s.m
+<(ode15s)Not enough input arguments.  See ODE15s.
+>(ode15s)入力引数が足りません。ODE15s を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode23.m
+<(ode23)MassSingular cannot be 'yes' for this solver.  See ODE15S  or ODE23T.
+>(ode23)MassSingular をこのソルバに対して 'yes' にできません。ODE15S または ODE23T を参照してください。
+<(ode23)ODE23 assumes MassSingular is 'no'. See ODE15S or ODE23T.
+>(ode23)ODE23 は、MassSingular が 'no' であることが必要です。ODE15S または ODE23T を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode23s.m
+<(ode23s)MassSingular cannot be 'yes' for this solver.  See ODE15S or ODE23T.
+>(ode23s)MassSingular をこのソルバに対して 'yes' にできません。ODE15S または ODE23T を参照してください。
+<(ode23s)Not enough input arguments.  See ODE23s.
+>(ode23s)入力引数が足りません。ODE23s を参照してください。
+<(ode23s)ODE23S assumes MassSingular is 'no'.  See ODE15S or ODE23T.
+>(ode23s)ODE23S は、MassSingular が 'no' であることが必要です。ODE15S または ODE23T を参照してください。
+<(ode23s)ODE23S cannot solve problems with non-constant mass matrices.  Use one of the other solvers of the ODE Suite.
+>(ode23s)ODE23S は、定数でない質量行列をもつ問題を解けません。ODE Suite の他のソルバのいずれかを使用してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode23t.m
+<(ode23t)Not enough input arguments.  See ODE23t.
+>(ode23t)入力引数が足りません。ODE23t を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode23tb.m
+<(ode23tb)MassSingular cannot be 'yes' for ODE23TB. See ODE15S or ODE23T.
+>(ode23tb)MassSingular は、ODE23TB に対して 'yes' にできません。ODE15S または ODE23T を参照してください。
+<(ode23tb)Not enough input arguments.  See ODE23tb.
+>(ode23tb)入力引数が足りません。ODE23tb を参照してください。
+<(ode23tb)ODE23TB assumes MassSingular is 'no'. See ODE15S or ODE23T.
+>(ode23tb)ODE23TB は、MassSingular が 'no' であることが必要です。ODE15S または ODE23T を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/ode45.m
+<(ode45)ODE45 assumes MassSingular is 'no'. See ODE15S or ODE23T.
+>(ode45)ODE45 は、MassSingular が 'no' であることが必要です。ODE15S または ODE23T を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/odeget.m
+<(odeget)Unrecognized property name '%s'.  See ODESET for possibilities.
+>(odeget)プロパティ名 '%s' が認識されません。可能性については ODESET を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/odextend.m
+<(odextend)Concatenating single and double outputs of %s.
+>(odextend)%s の single と double の出力を結合しています。
+<(odextend)Input argument %s must be a structure created by an ODE solver.
+>(odextend)入力引数 %s は、ODE ソルバで作成された構造体でなければなりません。
+<(odextend)Not enough input arguments.  See ODEXTEND.
+>(odextend)入力引数が足りません。ODEXTEND を参照してください。
+<(odextend)Solution %s available in %d..%d cannot be extended to %d
+>(odextend)利用可能な解 %s (%d..%d) は %d に拡張できません。
+<(odextend)Solution already available in %d..%d. Use DEVAL.
+>(odextend)解は %d..%d で既に利用可能です。DEVAL を使用してください。
+<(odextend)Unexpected solver name '%s' in %s.solver.
+>(odextend)予期せぬソルバ名 '%s' (%s.solver) です。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/optimget.m
+<(optimget)Unrecognized property name '%s'.  See OPTIMSET for possibilities.
+>(optimget)プロパティ名 '%s' が認識されません。可能性については OPTIMSET を参照してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/optimset.m
+<(optimset)Ambiguous parameter name '%s' 
+>(optimset)あいまいなパラメータ名 '%s' 
+<(optimset)Expected argument %d to be a string parameter name or an options structure\ncreated with OPTIMSET.
+>(optimset)引数 %d は、文字列のパラメータ名、または OPTIMSET で作成されるオプション構造体である必要があります。\n
+<(optimset)Expected argument %d to be a string parameter name.
+>(optimset)引数 %d は文字列のパラメータ名である必要があります。
+<(optimset)Expected value for parameter '%s'.
+>(optimset)パラメータ '%s' に対する値である必要があります。
+<(optimset)Invalid value for OPTIONS parameter %s: must be 'off' or 'on'.
+>(optimset)OPTIONS パラメータ %s に対する無効な値: 'off' または 'on' でなければなりません。
+<(optimset)Invalid value for OPTIONS parameter %s: must be 'off','on','iter','notify', or 'final'.
+>(optimset)OPTIONS パラメータ %s に対する無効な値: 'off','on','iter','notify', 'final' のいずれかでなければなりません。
+<(optimset)Invalid value for OPTIONS parameter %s: must be a function or a cell array of functions.
+>(optimset)OPTIONS パラメータ %s に対する無効な値: 関数、または関数のセル配列でなければなりません。
+<(optimset)Invalid value for OPTIONS parameter %s: must be a real non-negative integer (not a string).
+>(optimset)OPTIONS パラメータ %s に対する無効な値: (文字列ではなく) 実数で非負の整数でなければなりません。
+<(optimset)Invalid value for OPTIONS parameter %s: must be a real non-negative integer.
+>(optimset)OPTIONS パラメータ %s に対する無効な値: 実数で非負の整数でなければなりません。
+<(optimset)Invalid value for OPTIONS parameter %s: must be a real non-negative scalar (not a string).
+>(optimset)OPTIONS パラメータ %s に対する無効な値: (文字列ではなく) 実数で非負のスカラでなければなりません。
+<(optimset)Invalid value for OPTIONS parameter %s: must be a real non-negative scalar.
+>(optimset)OPTIONS パラメータ %s に対する無効な値: 実数で非負のスカラでなければなりません。
+<(optimset)The option '%s' is an Optimization Toolbox option and is not\nused by any MATLAB functions. This option will be ignored and not included\nin the options returned by OPTIMSET. Please change your code to not use \nthis option as it will error in a future release.
+>(optimset)オプション '%s' は、Optimization Toolbox のオプションで、\nどの MATLAB 関数でも使用されていません。このオプションは無視され、OPTIMSET で返される\nオプションに含まれません。将来のリリースでエラーになるため、\nこのオプションを使用しないようにコードを変更してください。
+<(optimset)Unrecognized parameter name '%s'.
+>(optimset)認識されないパラメータ名 '%s' です。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/pdepe.m
+<(pdepe)TSPAN must have at least 3 entries.
+>(pdepe)TSPAN は少なくとも 3 つの入力がなければなりません。
+<(pdepe)The entries of TSPAN must be strictly increasing.
+>(pdepe)TSPAN の入力は、厳密に増加していなくてはなりません。
+<(pdepe)The entries of XMESH must be strictly increasing.
+>(pdepe)XMESH の入力は、厳密に増加していなくてはなりません。
+<(pdepe)Time integration has failed. Solution is available at requested time points up to t=%e.
+>(pdepe)時間積分は失敗しました。解は t=%e までの要求時間点で利用可能です。
+<(pdepe)When M > 0, XMESH(1) must be non-negative.
+>(pdepe)M > 0 の場合、XMESH(1) は非負でなければなりません。
+<(pdepe)XMESH must have at least 3 entries.
+>(pdepe)XMESH は少なくとも 3 つの入力がなければなりません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/pdeval.m
+<(pdeval)Attempting to evaluate outside [a, b].
+>(pdeval)[a, b] の外側で評価しようとしています。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/quad.m
+<(quad)Infinite or Not-a-Number function value encountered.
+>(quad)無限 (Inf)、または数でない (NaN) の関数値がありました。
+<(quad)Maximum function count exceeded; singularity likely.
+>(quad)最大の関数計算回数を超えました。特異点の可能性があります。
+<(quad)Minimum step size reached; singularity possible.
+>(quad)最大ステップサイズに達しました。特異点の可能性があります。
+<(quad)The limits of integration must be scalars.
+>(quad)積分範囲はスカラでなければなりません。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/quad8.m
+<(quad8)QUAD8 is obsolete.  Please use QUADL instead.
+>(quad8)QUAD8 は古い関数です。代わりに QUADL を使用してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/separateOptimStruct.m
+<(separateOptimStruct)Field 'solver' in the problem structure must be a valid solver name.
+>(separateOptimStruct)問題の構造体のフィールド 'solver' は、有効なソルバ名でなければなりません。
+<(separateOptimStruct)Input problem structure does not have all the required fields.
+>(separateOptimStruct)入力の問題の構造体は、必要なフィールドのすべてをもっていません。
+<(separateOptimStruct)Input problem structure have too many fields.
+>(separateOptimStruct)入力の問題の構造体は、フィールドが多すぎます。
+<(separateOptimStruct)Invalid problem structure: 
+>(separateOptimStruct)無効な問題の構造体: 
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/triplequad.m
+<(triplequad)Requires at least seven inputs
+>(triplequad)少なくとも 7 つの入力が必要です
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/@inline/disp.m
+<(disp)Inline function:\n     %s(
+>(disp)インライン関数:\n     %s(
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/private/odearguments.m
+<(odearguments)Obsolete syntax.  Use %s(fun,tspan,y0,...) instead.
+>(odearguments)古いシンタックスです。代わりに %s(fun,tspan,y0,...) を使用してください。
+<(odearguments)Solving %s requires a scalar AbsTol, or a vector AbsTol of length %i
+>(odearguments)解 %s は、スカラの AbsTol、あるいは長さ %i のベクトルの AbsTol が必要です
+<(odearguments)Use %s(%s,tspan,y0,...) instead.
+>(odearguments)代わりに %s(%s,tspan,y0,...) を使用してください。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/private/odeevents.m
+<(odeevents)The ODE option 'Events' must be set to 'on' | 'off' 
+>(odeevents)ODE オプション 'Events' は、'on' | 'off' に設定されなければなりません
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/private/odefinalize.m
+<(odefinalize)%g LU decompositions\n
+>(odefinalize)%g の LU 分解\n
+<(odefinalize)%g failed attempts\n
+>(odefinalize)%g の失敗した試行\n
+<(odefinalize)%g function evaluations\n
+>(odefinalize)%g の関数評価\n
+<(odefinalize)%g partial derivatives\n
+>(odefinalize)%g 偏微分\n
+<(odefinalize)%g solutions of linear systems\n
+>(odefinalize)%g の線形システムの解\n
+<(odefinalize)%g successful steps\n
+>(odefinalize)%g の成功したステップ\n
+<(odefinalize)Unrecognized solver: %s
+>(odefinalize)認識されないソルバ: %s
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/private/odejacobian.m
+<(odejacobian)Unrecognized option 'JPattern': 
+>(odejacobian)認識されないオプション 'JPattern': 
+<(odejacobian)Unrecognized option 'Jacobian': 
+>(odejacobian)認識されないオプション 'Jacobian': 
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/private/odemass.m
+<(odemass)Assuming Mass value 'M', a constant mass matrix.
+>(odemass)Mass の値 'M' は、定数の質量行列であることが必要です。
+<(odemass)Assuming Mass value 'M(t)', a time-dependent mass matrix.
+>(odemass)Mass の値 'M(t)' は、時間依存の質量行列であることが必要です。
+<(odemass)Assuming Mass value 'none', no mass matrix.
+>(odemass)質量値 'none' は、質量行列でないことが必要です。
+<(odemass)Mass property values are 'none', 'M', 'M(t)', and 'M(t,y)' (see ODESET).\n         The 'on' and 'off' values are obsolete and may not be supported in a\n         future release.
+>(odemass)Mass プロパティ値は、'none', 'M', 'M(t)', 'M(t,y)' です (ODESET を参照)。\n         'on' と 'off' の値は古く、将来のリリースでサポートされない可能性があります。\n         
+<(odemass)The MassConstant property is obsolete and will disappear \n         in a future release (see the Mass property of ODESET).
+>(odemass)MassConstant プロパティは古く、将来のリリースでは現れませんn         (ODESET の Mass プロパティを参照)。
+<(odemass)The ODESET property 'MStateDependence' must be set to 'none' | 'weak' | 'strong' 
+>(odemass)ODESET プロパティ 'MStateDependence' は、'none' | 'weak' | 'strong' に設定されなければなりません
+<(odemass)Unrecognized property 'Mass': 
+>(odemass)認識されないプロパティ 'Mass': 
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/private/odenonnegative.m
+<(odenonnegative)All indices specified in ODESET('NonNegative',idx) must satisfy 1 <= idx <= neq
+>(odenonnegative)ODESET('NonNegative',idx) に指定されたすべてのインデックスは、1 <= idx <= neq を満たさなければなりません
+<(odenonnegative)Non-negativity constraint violated at t0.
+>(odenonnegative)非負の制約は t0 で違反しました。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/fminsearch.m
+<(fminsearch)The input to FMINSEARCH should be either a structure with valid fields or consist of at least two arguments.
+>(fminsearch)FMINSEARCH への入力は、有効なフィールドをもつ構造体か、少なくとも 2 つの引数で構成される必要があります。
+
+%%X:\bat\Amath\perfect\matlab\toolbox\matlab\funfun/fzero.m
+<(fzero)Exiting fzero: aborting search for an interval containing a sign change\n    because NaN or Inf function value encountered during search.\n(Function value at %g is %g.)\nCheck function or try again with a different starting value.
+>(fzero)fzero を終了中: NaN または Inf の関数値が探索中にあったため、\n    符号変化を含む区間に対する探索を中止しています。\n(%g での関数値は %g です)\n関数をチェックして、別の初期値で再度試してください。
+<(fzero)Exiting fzero: aborting search for an interval containing a sign change\n    because complex function value encountered during search.\n(Function value at %g is %s.)\nCheck function or try again with a different starting value.
+>(fzero)fzero を終了中: 複素数の関数値が探索中にあったため、\n    符号変化を含む区間に対する探索を中止しています。\n(%g での関数値は %s. です)\n関数をチェックして、別の初期値で再度試してください。
+
+%%toolbox/matlab/funfun/bvp5c.m
+<(bvp5c)The maximum error is %10.3e. \n
+>(bvp5c)最大誤差は %10.3e です。\n
+<(bvp5c)Unable to meet the tolerance without using more than %d mesh points. \n The last mesh of %d points and the solution are available in the output argument. \n The maximum error is %g, while requested accuracy is %g.
+>(bvp5c)%d より多いメッシュ点を使用せずに許容誤差を満たすことはできません。\n %d 点の最後のメッシュと解は、出力引数で利用可能です。\n 最大誤差は %g で、要求精度は %g です。
+
+%%toolbox/matlab/funfun/private/bvparguments.m
+<(bvparguments)AbsTol in OPTIONS must be positive.
+>(bvparguments)OPTIONS の AbsTol は正でなければなりません。
+<(bvparguments)Double entries detected in SOLINIT.x. Use BVP4C for solving multipoint BVP.
+>(bvparguments)二重の要素が SOLINIT.x 内で検出されました。多点 BVP を解くには BVP4C を使用してください。
+<(bvparguments)Error in calling %s(ODEFUN,BCFUN,SOLINIT%s): \n
+>(bvparguments)%s(ODEFUN,BCFUN,SOLINIT%s) の呼び出し中にエラー: \n
+<(bvparguments)For this problem AbsTol in OPTIONS must be a scalar or a vector of length %d.
+>(bvparguments)この問題に対して、OPTIONS の AbsTol は、スカラ、または長さ %d のベクトルでなければなりません。
+<(bvparguments)Internal error -- unrecognized solver name: %s,
+>(bvparguments)内部エラー -- 認識されないソルバ名: %s,
+<(bvparguments)No initial guess provided in SOLINIT.y.
+>(bvparguments)SOLINIT.y 内に与えられた初期推定がありません。
+<(bvparguments)RelTol in OPTIONS has been increased to %g.
+>(bvparguments)OPTIONS の RelTol は %g に増加しました。
+<(bvparguments)RelTol in OPTIONS must be a positive scalar.
+>(bvparguments)OPTIONS の RelTol は正のスカラでなければなりません。
+<(bvparguments)SOLINIT.x must contain at least the two end points.
+>(bvparguments)SOLINIT.x は、少なくとも 2 つの終点を含まなければなりません。
+<(bvparguments)SOLINIT.y not consistent with SOLINIT.x.
+>(bvparguments)SOLINIT.y は、SOLINIT.x と一致しません。
+<(bvparguments)The boundary condition function BCFUN must be a function_handle.
+>(bvparguments)境界条件の関数 BCFUN は、function_handle でなければなりません。
+<(bvparguments)The boundary condition function BCFUN should return a column vector of length %i.
+>(bvparguments)境界条件の関数 BCFUN は、長さ %i の列ベクトルを返す必要があります。
+<(bvparguments)The derivative function ODEFUN must be a function_handle.
+>(bvparguments)導関数 ODEFUN は、function_handle でなければなりません。
+<(bvparguments)The derivative function ODEFUN should return a column vector of length %i.
+>(bvparguments)導関数 ODEFUN は、長さ %i の列ベクトルを返す必要があります。
+<(bvparguments)The entries in SOLINIT.x must increase or decrease.
+>(bvparguments)SOLINIT.x 内の要素は、増加、または減少しなければなりません。
+<(bvparguments)The field 'x' not present in SOLINIT.
+>(bvparguments)フィールド 'x' は SOLINIT 内に存在しません。
+<(bvparguments)The field 'y' not present in SOLINIT.
+>(bvparguments)フィールド 'y' は SOLINIT 内に存在しません。
+<(bvparguments)The initial profile SOLINIT must be provided as a structure.
+>(bvparguments)初期プロファイル SOLINIT は、構造体として与えられなければなりません。
+<(bvparguments)Warning in calling %s(ODEFUN,BCFUN,SOLINIT%s): \n
+>(bvparguments)%s(ODEFUN,BCFUN,SOLINIT%s) の呼び出し中に警告: \n
+
+%%toolbox/matlab/funfun/private/bvpsingular.m
+<(bvpsingular)Singular term must be square matrix of size neqn.
+>(bvpsingular)特異項は neqn のサイズの正方行列でなければなりません。
+
+%%toolbox/matlab/funfun/private/bvpfunctions.m
+<(bvpfunctions)Multipoint BVP not yet supported with BVP5C. Use BVP4C instead.
+>(bvpfunctions)多点 BVP は、BVP5C でまだサポートされていません。代わりに BVP4C を使用してください。
+<(bvpfunctions)Unexpected value of the BCJacobian option. See BVPSET for acceptable values.
+>(bvpfunctions)BCJacobian オプションの予期せぬ値です。受け入れ可能な値については、BVPSET を参照してください。
+<(bvpfunctions)Unexpected value of the FJacobian option. See BVPSET for acceptable values.
+>(bvpfunctions)FJacobian オプションの予期せぬ値です。受け入れ可能な値については、BVPSET を参照してください。
+
+%%toolbox/matlab/funfun/quadgk.m
+<(quadgk)A and B must be scalar floats.
+>(quadgk)A と B はスカラの浮動小数点数でなければなりません。
+<(quadgk)Contour endpoints and waypoints must be finite.
+>(quadgk)等高線図の終点と中間点は、有限でなければなりません。
+<(quadgk)First input argument must be a function handle.
+>(quadgk)1 番目の入力引数は関数ハンドルでなければなりません。
+<(quadgk)Infinite or Not-a-Number value encountered.
+>(quadgk)無限 (Inf)、または数でない (NaN) 値がありました。
+<(quadgk)Invalid AbsTol
+>(quadgk)無効な AbsTol
+<(quadgk)Invalid RelTol
+>(quadgk)無効な RelTol
+<(quadgk)Invalid option.  Expected option name followed by option value.
+>(quadgk)無効なオプション。オプション名の後にオプション値が続く必要があります。
+<(quadgk)MaxIntervalCount must be a positive integer scalar.
+>(quadgk)MaxIntervalCount は、正の整数のスカラでなければなりません。
+<(quadgk)Minimum step size reached near x = %g; singularity possible.
+>(quadgk)最小ステップサイズが x = %g の近傍に達しました。特異点の可能性があります。
+<(quadgk)Output of the function must be the same size as the input.
+>(quadgk)関数の出力は、入力と同じサイズでなければなりません。
+% added some extra \n in translation since it shows up as a too long sentence due to less space in Japanese (g393025).
+<(quadgk)Reached the limit on the maximum number of intervals in use.\nApproximate bound on error is%9.1e. The integral may not exist, or\nit may be difficult to approximate numerically. Increase MaxIntervalCount\nto %d to enable QUADGK to continue for another iteration.
+>(quadgk)使用中に繰り返しの最大数の制限に達しました。\n誤差の近似境界は %9.1e です。積分は存在しないか、\nまたは数値的に近似することが困難である可能性があります。\n別の繰り返しで継続するように QUADGK を有効にするには、\nMaxIntervalCount を %d に増やしてください。
+<(quadgk)RelTol was increased to 100*eps('%s') = %g.
+>(quadgk)RelTol は 100*eps('%s') = %g に増加しました。
+<(quadgk)Supported classes are 'double' and 'single'.
+>(quadgk)サポートするクラスは、'double' と 'single' です。
+<(quadgk)Unrecognized option.
+>(quadgk)認識されないオプションです。
+<(quadgk)Waypoints must be a vector.
+>(quadgk)中間点はベクトルでなければなりません。
+<(quadgk)Waypoints must be finite and strictly increase or strictly decrease.
+>(quadgk)中間点は、有限で、厳密に増加する、あるいは厳密に減少しなければなりません。
+
+% Copyright 1998-2007 The MathWorks, Inc.
+% $Revision: 1.7.4.14.2.1 $ $Date: 2007/07/31 14:32:56 $

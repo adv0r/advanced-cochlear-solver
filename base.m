@@ -1,0 +1,124 @@
+%Universita' degli studi di Roma - Tor Vergata 
+%Mailto:paternoster.nicolo@gmail.com
+function varargout = base(varargin)
+
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @base_OpeningFcn, ...
+                   'gui_OutputFcn',  @base_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+
+function base_OpeningFcn(hObject, eventdata, handles, varargin)
+handles.output = hObject;
+load('output/tempFileName.mat');
+load(toImport);
+
+axes(handles.tAx)
+plot(surfy,solution(:,1));
+xlabel('t(s)');
+ylabel('A');
+grid on
+
+        %@@@@ For Jasa --------------
+%         nZeri= 256; % Numero di campioni corrispondenti a 2.5 ms
+%         window = repmat(0,Nt,1);
+%         tukey=tukeywin(Nt - nZeri,0.5); %Finestra di Tukey
+%         for i=nZeri:Nt-1;
+%             window(i,1)=tukey(i-nZeri+1);
+%         end
+%          for i=nZeri+Nt/2:Nt-1;
+%             window(i,1)=1;
+%         end
+%         figure 
+%         plot (window)
+%         %siG = window.*solution(:,1);
+%         siG = solution(:,1);
+%         figure
+%         plot(surfy,siG);
+%         
+%         xlabel('Time(s)');
+%         ylabel('A');
+%         grid on        
+        %@@@@ For Jasa --------------
+
+
+fftlog = log((abs(fftVal)));
+
+axes(handles.fftAx) % Select the proper axes
+plot(fftx,fftlog);
+axis([0 6500 min(fftlog) max(fftlog)]);
+xlabel('f(Hz)');
+ylabel('A');
+grid on
+
+guidata(hObject, handles);
+
+function varargout = base_OutputFcn(hObject, eventdata, handles) 
+
+varargout{1} = handles.output;
+
+
+% --- Executes during object creation, after setting all properties.
+function edit1_CreateFcn(hObject, eventdata, handles)
+
+function windowCheck_Callback(hObject, eventdata, handles)
+stimLenght = 0.0002;
+load('output/tempFileName.mat');
+load(toImport);
+
+if(get(handles.windowCheck,'Value') == 1)
+    nZeri= int32((Nt*0.0015)/tmax); % Numero di campioni corrispondenti a 2.5 ms
+    window = repmat(0,Nt,1);
+    tukey=tukeywin(Nt - nZeri,0.15); %Finestra di Tukey
+    for i=nZeri:Nt-1
+     window(i,1)=tukey(i-nZeri+1);
+    end
+    
+    
+    signal= window.*solution(:,1);
+    axes(handles.tAx)
+    plot(surfy,signal);
+    xlabel('t(s)');
+    ylabel('A');
+    grid on
+    
+    
+ 
+    newFFT = abs(fft(signal));
+    newFFT1 = newFFT(1: Nt/2);
+    axes(handles.fftAx); 
+    fftlog = log((abs(newFFT1)));
+    plot(fftx,fftlog);
+    axis([0 6500 min(fftlog) max(fftlog)]);
+   % xlabel('f(Hz)');
+    ylabel('A');
+    grid on
+    
+    else
+    axes(handles.tAx)
+    plot(surfy,solution(:,1));
+    xlabel('t(s)');
+    ylabel('A');
+    grid on
+
+	axes(handles.fftAx) 
+    fftlog = log((abs(fftVal)));
+	plot(fftx,fftlog);
+	axis([0 6500 min(fftlog) max(fftlog)]);
+	%xlabel('f(Hz)');
+	ylabel('A');
+	grid on
+end
+
+

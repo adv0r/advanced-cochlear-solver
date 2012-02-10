@@ -1,0 +1,928 @@
+%Advanced Cochlear Simulator . Developed by Paternoster - 2009  
+%Universita' degli studi di Roma - Tor Vergata 
+%Mailto:paternoster.nicolo@gmail.com
+
+function varargout = cochlearAnalysis(varargin)
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @cochlearAnalysis_OpeningFcn, ...
+                   'gui_OutputFcn',  @cochlearAnalysis_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+end
+
+
+function cochlearAnalysis_OpeningFcn(hObject, eventdata, handles, varargin)
+handles.output = hObject;
+guidata(hObject, handles);
+end
+
+function varargout = cochlearAnalysis_OutputFcn(hObject, eventdata, handles) 
+varargout{1} = handles.output;
+end
+
+function analyzeBtn_Callback(hObject, eventdata, handles)
+clc; %Esegue un clear sulla schermata
+cd output/;%Directory di output
+%Creazione lista dei file presenti nella directory di output
+temp = dir;
+temp2 = struct2cell(temp);
+[m,n] = size(temp2);
+for i=4:n-1
+    fileList(1,i-3) = temp2(1,i);
+end
+indexFile= get(handles.fileSel,'Value');
+fileName = fileList(1,indexFile);
+fN = char(fileName);
+if ( indexFile > 2 )  
+    indexFile2 = indexFile-1;  
+    fileName2 = fileList(1,indexFile2);
+    fN2 = char(fileName2);
+end
+
+
+
+%Importo i dati selezionati
+
+if(strcmp('on',get(handles.optPanel1,'Visible')))
+toImport = strcat('output/',fN);
+nonlin =0;
+clear D f1 f2 lambda sType stimLenght w0
+load(toImport);
+importfile(toImport); %Questo inserisce le variabili nel workspace 
+save('tempFileName','toImport');%creo un file temporaneo con il nome del file che verra' caricato in seguito
+cd ..;
+
+
+
+
+%Disegno lo stimolo ------------------------------
+if    ( get(handles.selectStimolo,'Value')==1)
+set(handles.stimoloAx,'Visible','on');
+set(handles.fftAx,'Visible','on');
+samples = 500;
+x = linspace(0,tmax,samples);
+if(sType==0)
+    toPlot = sinc((x-0.0001)/stimLenght);
+    
+elseif(sType==1)
+    toPlot = sin(2*pi*freq*x);
+else
+    toPlot = sin(2*pi*f1*x) + sin(2*pi*f2*x);
+    set(handles.dpRatioEdit,'String',(f2/f1));
+    set(handles.dpEdit,'String',(2*f1-f2 ));
+end
+
+axes(handles.stimoloAx);
+plot(x,toPlot);
+axis([0 0.002 min(toPlot)+0.05 max(toPlot)+0.05])
+if (sType == 2)  axis([0 0.01 min(toPlot)+0.05 max(toPlot)+0.05])
+end
+
+
+title('Stimulus');
+grid on
+
+ffts=abs(fft(toPlot));
+axes(handles.fftAx);
+df = (1 / (tmax / samples)) / samples ;
+plot((1:samples/2)*df,ffts(1:samples/2));
+axis([0 12000 0 max(ffts)+0.05])
+title('Spettro Stimolo');
+grid on
+end
+%-------------------------------------------------
+
+
+
+
+if ( get(handles.selectBase,'Value')==1  )
+base;
+end
+
+if( get(handles.selectWavelet,'Value')==1)
+    wavelet;
+    wavelet2;
+end
+
+if    ( get(handles.selectFix,'Value')==1)
+    Xfix_Tfix;
+end
+
+
+
+%Inviluppo temporale del segnale---------------------------------
+if    ( get(handles.inviluppoCheck,'Value')==1)
+    figbound = [0, 0, 500, 300];%Dimensioni della finestra
+    figure('Name',strcat('Inviluppo temporale : ',fN),'NumberTitle','off','OuterPosition',figbound);
+    inviluppoT=repmat(0,1,Nt);
+    inviluppominT=repmat(0,1,Nt);
+    for j=1:Nt
+      inviluppoT(j) = max(solution(j,:)); 
+      inviluppominT(j) = min(solution(j,:)); 
+    end
+    plot(surfy,inviluppoT,'-b',surfy,inviluppominT,'-r');
+    xlabel('t[s]');
+    ylabel('A');
+    title('Andamento nel tempo dell''escursione massima della BM');
+    axis([0 tmax min(inviluppominT)-0.01 max(inviluppoT)+0.01]);
+    grid on
+end
+%Massimi della membrana basilare---------------------------------    
+if ( get(handles.xMaxCheck,'Value')==1)
+    figbound = [0, 0, 500, 300];%Dimensioni della finestra
+    figure('Name',strcat('Tempo di Massima escursione della bm in funzione della posizione : ',fN),'NumberTitle','off','OuterPosition',figbound);
+    if(N>Nx)
+        sol = subsolution;
+        newN = Nx ;
+        x = subsurfx;
+    else
+        sol = solution;
+        newN = N;
+        x= surfx;
+    end
+    inviluppoX=repmat(0,1,newN);
+    for j=1:newN
+      [c,i] = max(sol(:,j)); 
+      inviluppoX(j) = i ;
+    end
+    %plot(getFreq(x/1000),2*(inviluppoX/Nt * tmax),'ob');
+    %xlabel('f(Hz)');
+    plot(x,(inviluppoX/Nt * tmax),'ob');
+    xlabel('x(mm)');
+    ylabel('t(s)');
+    %axis([0 6000 0 0.04]);
+    title ('Tempo della massima escursione della bm in funzione di x');
+    grid on
+    end
+
+%Plot della travelling wave
+if    ( get(handles.selectTw,'Value')==1)
+    figbound = [0, 0, 1440, 900];%Dimensioni della finestra
+    figure('Name',strcat('Travelling Wave :',fN),'NumberTitle','off','OuterPosition',figbound);
+    if(N>Nx)
+        surfc(subsurfx,surfy,subsolution); %Decommentare!
+        %@@@@ For Jasa --------------
+        %surf(surfx,surfy,solution);
+
+        %@@@@ For Jasa --------------
+    else 
+        surfc(surfx,surfy,solution);
+    end
+    shading flat;
+    colormap(bone);
+    view(160,45);
+    xlabel('space (mm)');
+    ylabel('time (ms)');
+    zlabel('solution (micron)');
+    
+end
+
+%Greenwood map-----------------------------------
+if    ( get(handles.greenCheck,'Value')==1)
+    frequenze = logspace (1.3,4.3,100);
+    greenwood = getX(frequenze);
+    figure('Name','Mappa di GreenWood Inversa ','NumberTitle','off');
+    semilogx ( frequenze , greenwood) ;
+    grid
+    title ('Mappa di Greenwood');
+    xlabel ('Frequenza [Hz]');
+    ylabel ('Distanza del sito tonotopico sulla BM [m]');
+    
+    x= linspace(0,0.035,175);
+    fx = getFreq(x);
+    figure('Name','Mappa di GreenWood ','NumberTitle','off');
+    semilogy( x,fx);
+    ylabel ('Frequenza [Hz]');
+    xlabel ('Distanza del sito tonotopico sulla BM [m]');
+    grid
+end
+
+else
+    %__________________ DP SERIE_________________________________
+    %__________________ DP SERIE_________________________________
+    %__________________ DP SERIE_________________________________
+    
+    cd ..;
+    [jj kk] = size(fN);
+    fNn = fN(1,1:kk-7);
+   
+    
+    %%Prendo i parametri da passare al DPanalyzer
+    cWave = get(handles.waveletCheck,'Value');
+    cDPG = get(handles.DPGCheck,'Value');
+    cPhase = get(handles.phaseCheck,'Value');
+    cOnset = get(handles.onsetCheck,'Value');
+    cTa = get(handles.taCheck,'Value');
+    cSot = get(handles.sotCheck,'Value');
+    cOnsetx = str2double(get(handles.onsetX,'String'));
+    fAlt = 0;%Cancella
+    if(get(handles.pxFdppp,'Value') == 1)
+        fAlt=1;
+    end
+    
+    if(get(handles.pxF2,'Value') == 1)
+        fAlt=2;
+    end
+       
+    if(get(handles.pxFx,'Value') == 1)
+        fAlt=str2double(get(handles.pxFreq,'String'));
+    end
+    
+    DPanalyzer(fNn,cWave,cDPG,cPhase,cOnset,cOnsetx,cTa,cSot,fAlt);
+end
+
+
+end
+
+%Importa nel workspace le variabili contenute nel fileToRead1
+
+
+function importfile(fileToRead1)
+newData1 = load('-mat', fileToRead1);
+vars = fieldnames(newData1);
+for i = 1:length(vars)
+    assignin('base', vars{i}, newData1.(vars{i}));
+end
+end
+
+
+function selectAll_Callback(hObject, eventdata, handles)
+if (get(handles.selectAll,'Value')==1)
+     set(handles.selectBase,'Value',1);
+     set(handles.selectWavelet,'Value',1);
+     set(handles.selectTw,'Value',1);
+     set(handles.selectFix,'Value',1);
+     set(handles.selectStimolo,'Value',1);
+     set(handles.inviluppoCheck,'Value',1);
+     set(handles.xMaxCheck,'Value',1);
+     set(handles.greenCheck,'Value',1);
+     
+     
+else 
+     set(handles.selectBase,'Value',0);
+     set(handles.selectWavelet,'Value',0);
+     set(handles.selectTw,'Value',0);
+     set(handles.selectFix,'Value',0);
+     set(handles.selectStimolo,'Value',0);
+     set(handles.inviluppoCheck,'Value',0);
+     set(handles.xMaxCheck,'Value',0);
+     set(handles.greenCheck,'Value',0);
+end
+
+end
+
+function selectBase_Callback(hObject, eventdata, handles)
+end
+
+function selectBaseFFT_Callback(hObject, eventdata, handles)
+end
+
+
+function selectWavelet_Callback(hObject, eventdata, handles)
+end
+
+
+function selectTw_Callback(hObject, eventdata, handles)
+end
+
+function selectWindow_Callback(hObject, eventdata, handles)
+end
+
+function selectFix_Callback(hObject, eventdata, handles)
+end
+
+function selectTfix_Callback(hObject, eventdata, handles)
+end
+
+function selectStimolo_Callback(hObject, eventdata, handles)
+end
+
+
+
+
+function N_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function eps_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function gamma2_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+function timeElaps_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function date_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function beginTime_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function L_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function w0_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+
+function Q_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+function Nt_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function Nx_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+
+function D_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function tmax_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function Ks_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function Cs_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function Ms_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function ro_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function lambda_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function f1_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function f2_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+function slider2_Callback(hObject, eventdata, handles)
+end
+
+
+function slider2_CreateFcn(hObject, eventdata, handles)
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+end
+
+function slider3_Callback(hObject, eventdata, handles)
+end
+
+function slider3_CreateFcn(hObject, eventdata, handles)
+
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+end
+
+
+
+function f2_Callback(hObject, eventdata, handles)
+end
+
+function edit21_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function f1_Callback(hObject, eventdata, handles)
+end
+function edit22_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function sf_Callback(hObject, eventdata, handles)
+end
+function sf_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function checkParam_Callback(hObject, eventdata, handles)
+end
+
+function inviluppoCheck_Callback(hObject, eventdata, handles)
+end
+
+function fileSel_Callback(hObject, eventdata, handles)
+cd output/;
+temp = dir;
+temp2 = struct2cell(temp);
+[m,n] = size(temp2);
+ if (n <= 3)
+     fileList='Output directory is empty';
+ end
+for i=4:n-1
+    fileList(1,i-3) = temp2(1,i);
+end
+set(hObject,'String',fileList);
+
+
+fileName = fileList(1,get(hObject,'Value'));
+fN = char(fileName);
+k= strfind(fN, 'cfg');
+stimLenght = 0.02;
+if(size(k)  == 0)
+    if(n >= 3)
+        %whos('global')
+    clear D f1 f2 lambda sType stimLenght w0
+    load(fN)
+    set(handles.dpPanel,'Visible','on');
+    set(handles.sfPanel,'Visible','on');
+    set(handles.seriePanel,'Visible','off');
+
+    if (sType~=2 || sType~=4 )
+        set(handles.dpPanel,'Visible','off');
+    end
+    if (sType~=1)
+        set(handles.sfPanel,'Visible','off');
+    end
+
+    if (sType==0)
+       set(handles.tePanel,'Visible','on');
+    end
+    if (sType==1)
+       set(handles.tePanel,'Visible','off');
+    end
+    if (sType==2)
+       set(handles.tePanel,'Visible','off');
+    end
+    if(sType==3)
+    set(handles.dpPanel,'Visible','on');
+    end
+    
+    
+    set(handles.paramPanel,'Visible','on');
+    set(handles.optPanel1,'Visible','on');
+    set(handles.optPanel2,'Visible','off');
+    %imposto i valori dei diversi  campi----------------------------------
+
+    set(handles.teEdit,'String',stimLenght);
+    set(handles.N,'String',N);
+    set(handles.eps,'String',epsilon*50);
+    set(handles.gamma2,'String',gamma2);
+
+    set(handles.L,'String',L);
+    w0dB = 20*log10((3.3*w0*10^3)); % Se cambi qui il valore 1.4 anche nel solver
+    set(handles.w0,'String',w0dB);
+    set(handles.Q,'String',Qf);
+    set(handles.ro,'String',ro);
+    set(handles.D,'String',D*1000);
+    set(handles.lambda,'String',lambda);
+    set(handles.nonlin,'String',nonlin(1));
+
+    set(handles.f1,'String',f1);
+    set(handles.f2,'String',f2);
+
+
+    set(handles.dpEdit,'String',(2*f1)-f2);
+    set(handles.dpRatioEdit,'String',f2/f1);
+
+    set(handles.date,'String',Date);
+    set(handles.beginTime,'String',beginTime);
+    set(handles.timeElaps,'String',timeElapsed/60);
+
+    set(handles.Nt,'String',Nt);
+    set(handles.Nx,'String',Nx);
+    set(handles.tmax,'String',tmax);
+    fSampling = Nt/tmax;
+    set(handles.fCedit,'String',fSampling);
+
+    set(handles.Cs,'String',Cs);
+    set(handles.Ks,'String',Ks);
+    set(handles.Ms,'String',Ms);
+    set(handles.seriePanel,'Visible','off');
+    %-----------------------------------------------------------
+    end 
+    
+else
+ if(n >= 3)
+    set(handles.paramPanel,'Visible','on');
+    
+    set(handles.optPanel1,'Visible','off');
+    set(handles.optPanel2,'Visible','on');
+        
+    set(handles.dpPanel,'Visible','off');
+    set(handles.sfPanel,'Visible','off');
+    set(handles.tePanel,'Visible','off');
+    indexFile= get(handles.fileSel,'Value');
+    fileName = fileList(1,indexFile);
+    fN2=fN;
+    if ( indexFile > 2 )  
+    indexFile2 = indexFile-1;  
+    fileName2 = fileList(1,indexFile2);
+    fN2 = char(fileName2);
+    end
+    clear D f1 f2 lambda sType stimLenght w0
+    load(fN2)
+    
+    stimLenght = 0;
+    set(handles.teEdit,'String',stimLenght);
+    set(handles.N,'String',N);
+    set(handles.eps,'String',epsilon*50);
+    set(handles.gamma2,'String',gamma2);
+
+    set(handles.L,'String',L);
+        disp('ciao') 
+    w0dB = 20*log10((3.3*w0*10^3)); % Se cambi qui il valore 3.3 anche nel solver
+    set(handles.w0,'String',w0dB);
+    set(handles.Q,'String',Qf);
+    set(handles.ro,'String',ro);
+    set(handles.D,'String',D*1000);
+    set(handles.lambda,'String',lambda);
+    set(handles.nonlin,'String',nonlin(1));
+
+    set(handles.f1,'String',f1);    
+    set(handles.f2,'String',f2);
+    
+    set(handles.dpEdit,'String',(2*f1)-f2);
+    set(handles.dpRatioEdit,'String',f2/f1);
+
+    set(handles.date,'String',Date);
+    set(handles.beginTime,'String',beginTime);
+    set(handles.timeElaps,'String',timeElapsed/60);
+
+    set(handles.Nt,'String',Nt);
+    set(handles.Nx,'String',Nx);
+    set(handles.tmax,'String',tmax);
+    fSampling = Nt/tmax;
+    set(handles.fCedit,'String',fSampling);
+
+    set(handles.Cs,'String',Cs);
+    set(handles.Ks,'String',Ks);
+    set(handles.Ms,'String',Ms);
+    
+    set(handles.seriePanel,'Visible','on'); 
+    clear D f1 f2 lambda sType stimLenght w0
+    load(fN);
+    
+    set(handles.DPfStart,'String',sFstart);
+    set(handles.DPfStop,'String',sFstop);
+    set(handles.DPratio,'String',sRatio);
+    set(handles.DPdf,'String',sDf);
+    set(handles.DPtElaps,'String',(tTot/60)/60);
+
+    
+    set(handles.doubleMode,'String',doubleCheck);
+    
+    if (doubleCheck==1)
+        set(handles.doubleMode,'BackgroundColor','Green');
+    else
+        set(handles.doubleMode,'BackgroundColor','Red');
+        
+    end
+ end    
+end
+cd ..;
+end
+
+function fileSel_CreateFcn(hObject, eventdata, handles)
+%Riempie il menu a tendina con la lista dei file presenti nella directory
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+cd output/;
+temp = dir;
+temp2 = struct2cell(temp);
+[m,n] = size(temp2);
+ if (n <= 3)
+     fileList='Output directory is empty';
+ end
+for i=4:n-1
+    fileList(1,i-3) = temp2(1,i);
+end
+set(hObject,'String',fileList);
+cd ..;
+end
+
+function stimoloAx_CreateFcn(hObject, eventdata, handles)
+end
+
+function fftAx_CreateFcn(hObject, eventdata, handles)
+end
+
+
+
+function dpEdit_Callback(hObject, eventdata, handles)
+end
+
+function dpEdit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function dpRatioEdit_Callback(hObject, eventdata, handles)
+end
+function dpRatioEdit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function xMaxCheck_Callback(hObject, eventdata, handles)
+end
+
+function greenCheck_Callback(hObject, eventdata, handles)
+end
+
+
+
+function teEdit_Callback(hObject, eventdata, handles)
+end
+
+function teEdit_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function nonlin_Callback(hObject, eventdata, handles)
+end
+function nonlin_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function fCedit_Callback(hObject, eventdata, handles)
+end
+    function fCedit_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function waveletCheck_Callback(hObject, eventdata, handles)
+end
+
+function onsetCheck_Callback(hObject, eventdata, handles)
+end
+
+function DPGCheck_Callback(hObject, eventdata, handles)
+end
+
+function taCheck_Callback(hObject, eventdata, handles)
+end
+
+function paramCheck_Callback(hObject, eventdata, handles)
+end
+
+function phaseCheck_Callback(hObject, eventdata, handles)
+end
+
+function radiobutton3_Callback(hObject, eventdata, handles)
+end
+
+
+function edit30_Callback(hObject, eventdata, handles)
+end
+
+function edit30_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function selectAllCheck2_Callback(hObject, eventdata, handles)
+if (get(hObject,'Value')==1)
+     set(handles.waveletCheck,'Value',1);
+     set(handles.DPGCheck,'Value',1);
+     set(handles.phaseCheck,'Value',1);
+     set(handles.onsetCheck,'Value',1);
+     set(handles.selectStimolo,'Value',1);
+     set(handles.taCheck,'Value',1);
+     set(handles.sotCheck,'Value',1);
+
+else 
+     set(handles.waveletCheck,'Value',0);
+     set(handles.DPGCheck,'Value',0);
+     set(handles.phaseCheck,'Value',0);
+     set(handles.onsetCheck,'Value',0);
+     set(handles.selectStimolo,'Value',0);
+     set(handles.taCheck,'Value',0);
+     set(handles.sotCheck,'Value',0);
+end
+end
+
+
+
+function DPfStart_Callback(hObject, eventdata, handles)
+end
+
+
+function DPfStart_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function DPfStop_Callback(hObject, eventdata, handles)
+end
+
+function DPfStop_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function DPratio_Callback(hObject, eventdata, handles)
+end
+
+function DPratio_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function DPdf_Callback(hObject, eventdata, handles)
+end
+
+
+function DPdf_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function DPtElaps_Callback(hObject, eventdata, handles)
+end
+
+function DPtElaps_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function doubleMode_Callback(hObject, eventdata, handles)
+end
+
+function doubleMode_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+function sotCheck_Callback(hObject, eventdata, handles)
+end
+
+function checkbox28_Callback(hObject, eventdata, handles)
+end
+
+
+
+function onsetX_Callback(hObject, eventdata, handles)
+end
+
+function onsetX_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function pxFreq_Callback(hObject, eventdata, handles)
+end
+
+function pxFreq_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+

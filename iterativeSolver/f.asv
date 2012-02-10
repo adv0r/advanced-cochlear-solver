@@ -1,0 +1,8 @@
+function yp = f(t,y)
+
+global outm w0 Bmat q f1 f2 sSf teType stimLength
+
+% Derivative function.
+%  yp = outm*y+w0*Bmat*q*(sin(2*pi*f2*t)+3*sin(2*pi*f1*t)); 
+%   yp = outm*y+w0*Bmat*q*sin(2*pi*f1*t); 
+  yp = outm*y+w0*Bmat*q*(sinc((t-0.0002)/0.00008)); 

@@ -1,0 +1,1129 @@
+function varargout = ode15s(ode,tspan,y0,options,varargin)
+
+%function varargout = ode15sitv8(ode,tspan,y0,options,varargin)
+%
+% ode15s full iterative version
+%
+% tuned for bmsdp.m (Bertaccini-Moleti-Sisto Distortion Product code)
+% (c) D. Bertaccini, April 2009
+%
+% replaces the file in $MATLAB/TOOLBOX/MATLAB/FUNFUN
+% (do not forget to change name to the original file first)
+%
+% D. Bertaccini, 
+% Universita' di Roma "Tor Vergata", Roma, Italy
+% http://www.mat.uniroma2.it/bertaccini/
+% bertaccini@mat.uniroma2.it
+%
+% IMPORTANT: the iterative features are controlled by these (NEW) GLOBAL PARAMETERS:
+% 
+% -Input-
+% iterativo: 0 for standard sparse direct solver, 1==bicgstab, 2==pcg, etc.
+% precond: (used with custom Krylov solvers) 1 if preconditioning is used, 0 otherwise (not in use in this version)
+% iter_tol: used as the minimum relative tolerance on the relative residuals of the iterative
+%           solvers for inner iterations (linear algebraic systems); should be chosen
+%           with the (global) relative tolerances for ode15s
+%
+% -Output-
+%
+% totiter: total number of iterations, if an iterative solver is used (oterw. is 0)
+% bicgcalls: total number of calls to the iterative solver (0 if iterativo==0)
+% decomposizioni: total number of matrix factorizations (0 if iterativo>0)
+%
+global totiter bicgcalls iterativo ndecomps sType
+global precond iter_tol iter_maxit
+global stampa massCalls B K gamma lambda ncb nls hstep x usa_quad
+
+fprintf('\nNew ode15s sparse iterative solvers R2008b for DP\n');
+fprintf('tuned for Bertaccini-Moleti-Sisto Distortion Product');
+fprintf('\n(c) D. Bertaccini - April-May 2009\n\n');
+
+
+%iterativo=1; % if 0, uses standard procedure; 
+             % if 1 uses bicgstab
+             % if 2 uses PCG
+             % needs ad-hoc preconditioning
+             
+totiter=0;      % total iters with bicgstab
+bicgcalls=0;    % number of calls to bicgstab  
+decomposizioni=0;
+bcgsiter=0;
+fid=1; % output on the screen
+
+
+
+%   Mark W. Reichelt, Lawrence F. Shampine, and Jacek Kierzenka, 12-18-97
+%   Copyright 1984-2007 The MathWorks, Inc.
+%   $Revision: 1.83.4.15.4.1 $  $Date: 2007/12/28 21:39:06 $
+
+solver_name = 'ode15s';
+
+
+if nargin < 4
+  options = [];
+  if nargin < 3
+    y0 = [];
+    if nargin < 2
+      tspan = [];
+      if nargin < 1
+        error('MATLAB:ode15s:NotEnoughInputs',...
+              'Not enough input arguments.  See ODE15s.');
+      end  
+    end
+  end
+end
+
+% Stats
+nsteps   = 0;
+nfailed  = 0;
+nfevals  = 0; 
+npds     = 0;
+ndecomps = 0;
+nsolves  = 0;
+
+% Output
+FcnHandlesUsed  = isa(ode,'function_handle');
+output_sol = (FcnHandlesUsed && (nargout==1));      % sol = odeXX(...)
+output_ty  = (~output_sol && (nargout > 0));  % [t,y,...] = odeXX(...)
+% There might be no output requested...
+
+sol = []; kvec = []; dif3d = []; 
+if output_sol
+  sol.solver = solver_name;
+  sol.extdata.odefun = ode;
+  sol.extdata.options = options;                       
+  sol.extdata.varargin = varargin;  
+end  
+
+% Handle solver arguments
+[neq, tspan, ntspan, next, t0, tfinal, tdir, y0, f0, odeArgs, odeFcn, ...
+ options, threshold, rtol, normcontrol, normy, hmax, htry, htspan] = ...
+    odearguments(FcnHandlesUsed, solver_name, ode, tspan, y0, options, varargin);
+nfevals = nfevals + 1;
+one2neq = (1:neq);
+
+% Handle the output
+if nargout > 0
+  outputFcn = odeget(options,'OutputFcn',[],'fast');
+else
+  outputFcn = odeget(options,'OutputFcn',@odeplot,'fast');
+end
+outputArgs = {};      
+if isempty(outputFcn)
+  haveOutputFcn = false;
+else
+  haveOutputFcn = true;
+  outputs = odeget(options,'OutputSel',1:neq,'fast');
+  if isa(outputFcn,'function_handle')  
+    % With MATLAB 6 syntax pass additional input arguments to outputFcn.
+    outputArgs = varargin;
+  end  
+end
+refine = max(1,odeget(options,'Refine',1,'fast'));
+if ntspan > 2
+  outputAt = 'RequestedPoints';         % output only at tspan points
+elseif refine <= 1
+  outputAt = 'SolverSteps';             % computed points, no refinement
+else
+  outputAt = 'RefinedSteps';            % computed points, with refinement
+  S = (1:refine-1) / refine;
+end
+printstats = strcmp(odeget(options,'Stats','off','fast'),'on');
+
+% Handle the event function 
+[haveEventFcn,eventFcn,eventArgs,valt,teout,yeout,ieout] = ...
+    odeevents(FcnHandlesUsed,odeFcn,t0,y0,options,varargin);
+
+% Handle the mass matrix
+[Mtype, Mt, Mfun, Margs, dMoptions] = odemass(FcnHandlesUsed,odeFcn,t0,y0,...
+                                              options,varargin);
+
+% Non-negative solution components
+idxNonNegative = odeget(options,'NonNegative',[],'fast');
+nonNegative = ~isempty(idxNonNegative);
+if nonNegative  
+  if Mtype == 0
+    % Explicit ODE -- modify the derivative function
+    [odeFcn,thresholdNonNegative] = odenonnegative(odeFcn,y0,threshold,idxNonNegative);
+    f0 = feval(odeFcn,t0,y0,odeArgs{:});
+    nfevals = nfevals + 1;
+  else
+    % Linearly implicit ODE/DAE -- ignore non-negativity constraints
+    nl = '\n         ';
+    warning('MATLAB:ode15s:NonNegativeIgnoredForLinearlyImplicitSystems',...
+            ['For linearly implicit systems, ODE15S does not constrain the solution.' ...
+             nl 'Option ''NonNegative'' will be ignored.']);   
+    nonNegative = false;
+    idxNonNegative = [];
+  end  
+end
+
+% Handle the Jacobian
+[Jconstant,Jac,Jargs,Joptions] = ...
+    odejacobian(FcnHandlesUsed,odeFcn,t0,y0,options,varargin);
+Janalytic = isempty(Joptions);
+    
+t = t0;
+y = y0;
+
+yp0_OK = false;
+DAE = false;
+RowScale = [];
+if Mtype > 0
+  
+  nz = nnz(Mt);
+  if nz == 0
+    error('MATLAB:ode15s:MassMatrixAllZero',...
+          'The mass matrix must have some non-zero entries.')
+  end
+   
+  Msingular = odeget(options,'MassSingular','maybe','fast');
+  switch Msingular
+    case 'no',     DAE = false;
+    case 'yes',    DAE = true;
+    case 'maybe',  DAE = (eps*nz*condest(Mt) > 1);       
+  end
+   
+  if DAE
+    yp0 = odeget(options,'InitialSlope',[],'fast');
+    if isempty(yp0)
+      yp0_OK = false;
+      yp0 = zeros(neq,1);  
+    else
+      yp0 = yp0(:);
+      if length(yp0) ~= neq
+        error('MATLAB:ode15s:YoYPoLengthMismatch',...
+              'y0 and yp0 have different lengths.');
+      end
+      % Test if (y0,yp0) are consistent enough to accept.
+      yp0_OK = (norm(Mt*yp0 - f0) <= 1e-3*rtol*max(norm(Mt*yp0),norm(f0)));
+    end   
+    if ~yp0_OK           % Must compute ICs, so classify them.
+      if Mtype >= 3  % state dependent
+        ICtype = 3;
+      else  % M, M(t)
+        % Test for a diagonal mass matrix.
+        [r,c] = find(Mt);
+        if isequal(r,c)   % diagonal
+          ICtype = 1;
+        elseif ~issparse(Mt) % not diagonal but full
+          ICtype = 2;
+        else  % sparse, not diagonal
+          ICtype = 3;
+        end
+      end      
+    end
+  end
+end
+Mcurrent = true;
+Mtnew = Mt;
+
+% if not set via 'options', initialize constant Jacobian here
+if Jconstant 
+  if isempty(Jac) % use odenumjac
+    [Jac,Joptions.fac,nF] = odenumjac(odeFcn, {t0,y0,odeArgs{:}}, f0, Joptions);    
+    nfevals = nfevals + nF;
+    npds = npds + 1;
+  elseif ~isa(Jac,'numeric')  % not been set via 'options'  
+    Jac = feval(Jac,t0,y0,Jargs{:}); % replace by its value
+    npds = npds + 1;
+  end
+end
+
+maxk = odeget(options,'MaxOrder',5,'fast');
+bdf = strcmp(odeget(options,'BDF','off','fast'),'on');
+
+% Initialize method parameters.
+G = [1; 3/2; 11/6; 25/12; 137/60];
+if bdf
+  alpha = [0; 0; 0; 0; 0];
+else
+  alpha = [-37/200; -1/9; -0.0823; -0.0415; 0];
+end
+invGa = 1 ./ (G .* (1 - alpha));
+erconst = alpha .* G + (1 ./ (2:6)');
+difU = [ -1, -2, -3, -4,  -5;           % difU is its own inverse!
+          0,  1,  3,  6,  10;
+          0,  0, -1, -4, -10;
+          0,  0,  0,  1,   5;
+          0,  0,  0,  0,  -1 ];
+maxK = 1:maxk;
+[kJ,kI] = meshgrid(maxK,maxK);
+difU = difU(maxK,maxK);
+maxit = 4;
+
+% Adjust the warnings.
+warnoffId = { 'MATLAB:singularMatrix', 'MATLAB:nearlySingularMatrix'}; 
+for i = 1:length(warnoffId)    
+  warnstat(i) = warning('query',warnoffId{i});
+  warnoff(i) = warnstat(i);
+  warnoff(i).state = 'off';
+end
+
+% Get the initial slope yp. For DAEs the default is to compute
+% consistent initial conditions.
+if DAE && ~yp0_OK
+  if ICtype < 3
+    [y,yp,f0,dfdy,nFE,nPD,Jfac] = daeic12(odeFcn,odeArgs,t,ICtype,Mt,y,yp0,f0,...
+                                          rtol,Jconstant,Jac,Jargs,Joptions); 
+  else    
+    [y,yp,f0,dfdy,nFE,nPD,Jfac,dMfac] = daeic3(odeFcn,odeArgs,tspan,htry,Mtype,Mt,Mfun,...
+                                               Margs,dMoptions,y,yp0,f0,rtol,Jconstant,...
+                                               Jac,Jargs,Joptions);   
+    if ~isempty(dMoptions)
+      dMoptions.fac = dMfac;
+    end        
+  end  
+  if ~isempty(Joptions)
+    Joptions.fac = Jfac;
+  end    
+  nfevals = nfevals + nFE;
+  npds = npds + nPD;
+  if Mtype >= 3
+    Mt = feval(Mfun,t,y,Margs{:});
+    Mtnew = Mt;
+    Mcurrent = true;
+  end
+else
+  if Mtype == 0 
+    yp = f0;
+  elseif DAE && yp0_OK
+    yp = yp0;
+  else
+   % DAN
+  if 1,  % per ora disabilitato, anche perche' una tantum
+    if issparse(Mt)
+      [L,U,P,Q,R] = lu(Mt);            
+      yp = Q * (U \ (L \ (P * (R \ f0))));      
+    else
+      [L,U,p] = lu(Mt,'vector');      
+      yp = U \ (L \ f0(p));
+    end  
+  elseif iterativo==2
+      [yp,bcgsflag,bcgsrelres,bcgsiter] =pcg(Mt,f0,iter_tol,iter_maxit);
+                   
+      totiter=totiter+bcgsiter;
+      bicgcalls=bicgcalls+1;
+  else
+      
+      % DAN: iterative solver - 
+      [yp,bcgsflag,bcgsrelres,bcgsiter] =bicgstab(Mt,f0,iter_tol,iter_maxit);
+                   
+      totiter=totiter+bcgsiter;
+      bicgcalls=bicgcalls+1;
+  end      
+    ndecomps = ndecomps + 1;              
+    nsolves = nsolves + 1;                
+  end
+    
+  if Jconstant
+    dfdy = Jac;
+  elseif Janalytic
+    dfdy = feval(Jac,t,y,Jargs{:});     
+    npds = npds + 1;                            
+  else   % Joptions not empty
+    [dfdy,Joptions.fac,nF] = odenumjac(odeFcn, {t,y,odeArgs{:}}, f0, Joptions);  
+    nfevals = nfevals + nF;    
+    npds = npds + 1;                            
+  end     
+end
+Jcurrent = true;
+
+% hmin is a small number such that t + hmin is clearly different from t in
+% the working precision, but with this definition, it is 0 if t = 0.
+hmin = 16*eps*abs(t);
+
+if isempty(htry)
+  % Compute an initial step size h using yp = y'(t).
+  if normcontrol
+    wt = max(normy,threshold);
+    rh = 1.25 * (norm(yp) / wt) / sqrt(rtol);  % 1.25 = 1 / 0.8
+  else
+    wt = max(abs(y),threshold);
+    rh = 1.25 * norm(yp ./ wt,inf) / sqrt(rtol);
+  end
+  absh = min(hmax, htspan);
+  if absh * rh > 1
+    absh = 1 / rh;
+  end
+  absh = max(absh, hmin);
+  
+  if ~DAE
+    % The error of BDF1 is 0.5*h^2*y''(t), so we can determine the optimal h.
+    h = tdir * absh;
+    tdel = (t + tdir*min(sqrt(eps)*max(abs(t),abs(t+h)),absh)) - t;
+    f1 = feval(odeFcn,t+tdel,y,odeArgs{:});
+    nfevals = nfevals + 1;                
+    dfdt = (f1 - f0) ./ tdel;
+    DfDt = dfdt + dfdy*yp;
+    if normcontrol
+      if Mtype > 0 
+          if issparse(Mt)  
+              rh = 1.25 * sqrt(0.5 * (norm(U \ (L \ (P * (R \ DfDt)))) / wt) / rtol);
+          else
+              rh = 1.25 * sqrt(0.5 * (norm(U \ (L \ DfDt(p))) / wt) / rtol);
+          end
+      else
+        rh = 1.25 * sqrt(0.5 * (norm(DfDt) / wt) / rtol);
+      end
+    else
+      if Mtype > 0
+        if issparse(Mt)
+          rh = 1.25*sqrt(0.5*norm((Q * (U \ (L \ (P * (R \ DfDt))))) ./ wt,inf) / rtol);
+        else  
+          rh = 1.25*sqrt(0.5*norm((U \ (L \ DfDt(p))) ./ wt,inf) / rtol);
+        end  
+      else
+        rh = 1.25 * sqrt(0.5 * norm( DfDt ./ wt,inf) / rtol);
+      end
+    end
+    absh = min(hmax, htspan);
+    if absh * rh > 1
+      absh = 1 / rh;
+    end
+    absh = max(absh, hmin);
+  end
+else
+  absh = min(hmax, max(hmin, htry));
+end
+h = tdir * absh;
+
+% Initialize.
+k = 1;                                  % start at order 1 with BDF1
+K = 1;                                  % K = 1:k
+klast = k;
+abshlast = absh;
+
+dif = zeros(neq,maxk+2);
+dif(:,1) = h * yp;
+
+hinvGak = h * invGa(k);
+nconhk = 0;                             % steps taken with current h and k
+
+% DAN: Miter non serve se full iterativo
+if iterativo, else Miter = Mt - hinvGak * dfdy; end
+
+% Account for strongly state-dependent mass matrix.
+if Mtype == 4
+  psi = dif(:,K) * (G(K) * invGa(k));
+  [dMpsidy,dMoptions.fac] = odenumjac(@odemxv, {Mfun,t,y,psi,Margs{:}}, Mt*psi, ...    
+                                      dMoptions);      
+  Miter = Miter + dMpsidy;
+end
+
+% Use explicit scaling of the equations when solving DAEs.
+if DAE
+  RowScale = 1 ./ max(abs(Miter),[],2);
+  Miter = sparse(one2neq,one2neq,RowScale) * Miter;
+end
+
+if iterativo
+   % do nothing 
+else
+  if issparse(Miter)
+    [L,U,P,Q,R] = lu(Miter);
+  else
+    [L,U,p] = lu(Miter,'vector');  
+  end  
+  ndecomps = ndecomps + 1;     
+end % if iterativo
+
+havrate = false;
+
+% Allocate memory if we're generating output.
+nout = 0;
+tout = []; yout = [];
+if nargout > 0
+  if output_sol
+    chunk = min(max(100,50*refine), refine+floor((2^11)/neq));      
+    tout = zeros(1,chunk);
+    yout = zeros(neq,chunk);
+    kvec = zeros(1,chunk);
+    dif3d = zeros(neq,maxk+2,chunk);
+  else      
+    if ntspan > 2                         % output only at tspan points
+      tout = zeros(1,ntspan);
+      yout = zeros(neq,ntspan);
+    else                                  % alloc in chunks
+      chunk = min(max(100,50*refine), refine+floor((2^13)/neq));
+      tout = zeros(1,chunk);
+      yout = zeros(neq,chunk);
+    end
+  end  
+  nout = 1;
+  tout(nout) = t;
+  yout(:,nout) = y;  
+end
+
+% Initialize the output function.
+if haveOutputFcn
+  feval(outputFcn,[t tfinal],y(outputs),'init',outputArgs{:});
+end
+
+% THE MAIN LOOP
+
+%clear Finv
+
+done = false;
+at_hmin = false;
+while ~done  
+  
+  hmin = 16*eps(t);
+  absh = min(hmax, max(hmin, absh));
+  if absh == hmin
+    if at_hmin
+      absh = abshlast;  % required by stepsize recovery
+    end  
+    at_hmin = true;
+  else
+    at_hmin = false;
+  end  
+  h = tdir * absh;
+  
+  if stampa
+      
+    if iterativo
+        if(sType~=3)
+         progressbar(t/tfinal,0);
+        else 
+         %progressbar(t/tfinal,4);  
+        end
+      fprintf('\n%d percent | t=%e h=%e Mass=%d it=%d (%d) LU=%d',int32(t/tfinal*100),t,h,massCalls,ceil(totiter),bcgsiter,ndecomps);
+    else
+        if(sType~=3)
+         progressbar(t/tfinal,0);
+         else 
+         %progressbar(t/tfinal,4);  
+        end
+      fprintf('\n%d percent | t=%e h=%e LU=%d',int32(t/tfinal*100),t,h,ndecomps);
+    end % if iterativo
+  end
+  
+  % Stretch the step if within 10% of tfinal-t.
+  if 1.1*absh >= abs(tfinal - t)
+    h = tfinal - t;
+    absh = abs(h);
+    done = true;
+  end
+  
+  if (absh ~= abshlast) || (k ~= klast)
+    difRU = cumprod((kI - 1 - kJ*(absh/abshlast)) ./ kI) * difU;
+    dif(:,K) = dif(:,K) * difRU(K,K);
+
+    hinvGak = h * invGa(k);  
+    
+    nconhk = 0; 
+    
+    
+    % DAN: Miter NON SERVE PER ITERATIVO+STATE-DEPENDENT
+    if iterativo
+        % do nothing
+    else
+      Miter = Mt - hinvGak * dfdy;
+    end % if iterativo
+    
+    
+    if Mtype == 4
+      Miter = Miter + dMpsidy;
+    end    
+    if DAE
+      RowScale = 1 ./ max(abs(Miter),[],2);
+      Miter = sparse(one2neq,one2neq,RowScale) * Miter;
+    end
+    
+    % DAN:
+    if iterativo
+        % Do nothing
+    else
+    if issparse(Miter)
+      [L,U,P,Q,R] = lu(Miter);
+    else  
+      [L,U,p] = lu(Miter,'vector');
+    end  
+    ndecomps = ndecomps + 1;            
+    end % if iterativo
+    havrate = false;
+  end
+  
+  % LOOP FOR ADVANCING ONE STEP.
+  nofailed = true;                      % no failed attempts
+  while true                            % Evaluate the formula.
+    
+    gotynew = false;                    % is ynew evaluated yet?
+    while ~gotynew
+
+      % Compute the constant terms in the equation for ynew.
+      psi = dif(:,K) * (G(K) * invGa(k));
+
+      % Predict a solution at t+h.
+      tnew = t + h;
+      if done
+        tnew = tfinal;   % Hit end point exactly.
+      end
+      h = tnew - t;      % Purify h.
+      pred = y + sum(dif(:,K),2);
+      ynew = pred;
+      
+      % The difference, difkp1, between pred and the final accepted 
+      % ynew is equal to the backward difference of ynew of order
+      % k+1. Initialize to zero for the iteration to compute ynew.
+      difkp1 = zeros(neq,1); 
+      if normcontrol
+        normynew = norm(ynew);
+        invwt = 1 / max(max(normy,normynew),threshold);
+        minnrm = 100*eps*(normynew * invwt);
+      else
+        invwt = 1 ./ max(max(abs(y),abs(ynew)),threshold);
+        minnrm = 100*eps*norm(ynew .* invwt,inf);
+      end
+
+      % Mtnew is required in the RHS function evaluation.
+      if Mtype == 2  % state-independent
+        if FcnHandlesUsed
+          Mtnew = feval(Mfun,tnew,Margs{:}); % mass(t,p1,p2...)
+        else                                     
+          Mtnew = feval(Mfun,tnew,ynew,Margs{:}); % mass(t,y,'mass',p1,p2...)
+        end
+      end
+      
+      % Iterate with simplified Newton method.
+      tooslow = false;
+      for iter = 1:maxit
+        if Mtype >= 3 
+          if iterativo
+            % do nothing, solvers use mass2.m
+          else
+            Mtnew = feval(Mfun,tnew,ynew,Margs{:}); % state-dependent
+          end % if iterativo
+        end
+        
+        if iterativo
+           % DAN: delicato
+           Mtnewpsi=massIT(psi+difkp1);
+           rhs= hinvGak*feval(odeFcn,tnew,ynew,odeArgs{:}) - Mtnewpsi;
+        else
+            rhs = hinvGak*feval(odeFcn,tnew,ynew,odeArgs{:}) -  Mtnew*(psi+difkp1);
+        end % if iterativo
+            
+        if DAE                          % Account for row scaling.
+          rhs = RowScale .* rhs;
+        end
+                
+        [lastmsg,lastid] = lastwarn('');
+        warning(warnoff);
+        
+        % DAN:
+        % *****solution of main linear systems ******     
+        
+        % DAN: PER ORA DISABILITATO
+        %if iterativo>0, % adjusted tolerance
+        %   iter_tol1=max(iter_tol,10^(-3*iter)); % talvolta disabilitato           
+        %end
+        
+        if iterativo==1, %uses bicgstab/GMRES
+            
+   % calcolo di alpha, gain factor         
+   %usa_quad=1;
+   
+  % B matrix function
+  B=speye(ncb); % resetta la B
+  [leny,lent]=size(y);
+  if usa_quad, %usa funzione quad
+      global uquad actual_x 
+      Lcoclea = 0.035;
+      % metto come globale una "copia" di y per la formula di quadrat.
+      uquad=y(2*ones(floor(leny/2),lent));
+      pause
+      cost=gamma/sqrt(lambda*pi);
+     for i=2:ncb-1
+       actual_x=i*hstep;
+       alfa=cost*quad(@nonlocal_alpha,0,Lcoclea,1.0e-4);
+       B(i+1,i)=-alfa; %matrice di accoppiamento non lineare
+     end  
+  else % usa integrazione standard
+    for i=2:ncb-1
+       somma=0;
+       for j = 2:ncb-1
+         %B(i,j)=0;
+         tmp=nls(j).*y(j*2,lent);
+          ef = gamma*(tanh(1/(tmp*tmp)))/sqrt(lambda*pi)*exp(-((x(i)-x(j))^2/lambda));
+%           ef = gamma*(1-tmp*tmp)/sqrt(lambda*pi)*exp(-((x(i)-x(j))^2/lambda));
+         somma = somma + ef*hstep;
+       end
+ %      alfa(i) = somma; %costruzione degli elementi alpha
+       B(i+1,i)=-somma; %matrice di accoppiamento non lineare con K=1
+    end
+%    for L2=1:ncb-K
+%        B(L2+K,L2)=-alfa(L2); %matrice di accoppiamento non lineare
+%    end
+  end % if usa_quad
+  
+  
+          % USA METODO ITERATIVO PROIETTIVO PER SISTEMA NONSIMMETRICO CON
+          % MATRICE Miter definita in modo implicito e Mt non banale
+          % (non e' possibile usare un solutore diretto sparso in questo stadio)
+          %
+          del00=zeros(size(rhs)); % inizializza a zero l'x0
+          %[del,bcgsflag,bcgsrelres,bcgsiter]=bicgspsx(hinvGak *
+          %dfdy,del00,rhs,iter_maxit,iter_tol,precond);
+         
+          [del,bcgsflag,bcgsrelres,bcgsiter]=gmrespsx(hinvGak * dfdy,del00,rhs,iter_maxit,iter_tol,precond);
+                 
+          totiter=totiter+bcgsiter;
+          bicgcalls=bicgcalls+1;
+        elseif iterativo==2, %uses PCG       
+          %[x,flag,relres,iter,resvec]=pcg(A,b,tol,maxit,M1,M2,x0,...)
+          [del,bcgsflag,bcgsrelres,bcgsiter]=pcg(Miter,rhs,iter_tol1,iter_maxit);                          
+          totiter=totiter+bcgsiter;
+          bicgcalls=bicgcalls+1;          
+        else % uses sparse direct solver
+          if issparse(Miter)
+            del = Q * (U \ (L \ (P * (R \ rhs))));
+          else  
+            del = U \ (L \ rhs(p));
+          end  
+        end  %if
+        
+        % monitor the current step. Normally put it off.
+        %fprintf('\n Call %i (no. iters=%i) h=%e\n',bicgcalls,bcgsiter,hinvGak);
+        
+        %%% END MAIN MODIFICATIONS 
+        
+        
+        warning(warnstat);
+        
+        % If no new warnings or a muted warning, restore previous lastwarn.
+        [msg,msgid] = lastwarn;
+        if isempty(msg) || any(strcmp(msgid,warnoffId))
+          lastwarn(lastmsg,lastid);
+        end        
+        
+        if normcontrol
+          newnrm = norm(del) * invwt;
+        else
+          newnrm = norm(del .* invwt,inf);
+        end
+        difkp1 = difkp1 + del;
+        ynew = pred + difkp1;
+        
+        if newnrm <= minnrm
+          gotynew = true;
+          break;
+        elseif iter == 1
+          if havrate
+            errit = newnrm * rate / (1 - rate);
+            if errit <= 0.05*rtol       % More stringent when using old rate.
+              gotynew = true;
+              break;
+            end
+          else
+            rate = 0;
+          end
+        elseif newnrm > 0.9*oldnrm
+          tooslow = true;
+          break;
+        else
+          rate = max(0.9*rate, newnrm / oldnrm);
+          havrate = true;                 
+          errit = newnrm * rate / (1 - rate);
+          if errit <= 0.5*rtol             
+            gotynew = true;
+            break;
+          elseif iter == maxit            
+            tooslow = true;
+            break;
+          elseif 0.5*rtol < errit*rate^(maxit-iter)
+            tooslow = true;
+            break;
+          end
+        end
+        
+        oldnrm = newnrm;
+      end                               % end of Newton loop
+      nfevals = nfevals + iter;         
+      nsolves = nsolves + iter;         
+      
+      if tooslow
+        nfailed = nfailed + 1;          
+        % Speed up the iteration by forming new linearization or reducing h.
+        if ~Jcurrent || ~Mcurrent
+          if ~Jcurrent  
+            if Janalytic
+              dfdy = feval(Jac,t,y,Jargs{:});
+            else
+              f0 = feval(odeFcn,t,y,odeArgs{:});
+              [dfdy,Joptions.fac,nF] = odenumjac(odeFcn, {t,y,odeArgs{:}}, f0, Joptions);     
+              nfevals = nfevals + nF + 1; 
+            end             
+            npds = npds + 1;            
+            Jcurrent = true;
+          end
+          if ~Mcurrent
+            Mt = feval(Mfun,t,y,Margs{:});
+            Mcurrent = true;
+            if Mtype == 4
+              [dMpsidy,dMoptions.fac] = odenumjac(@odemxv, {Mfun,t,y,psi,Margs{:}}, Mt*psi, ...
+                                                  dMoptions);      
+            end
+          end                       
+        elseif absh <= hmin
+          warning('MATLAB:ode15s:IntegrationTolNotMet',['Failure at t=%e.  ' ...
+                  'Unable to meet integration tolerances without reducing ' ...
+                  'the step size below the smallest value allowed (%e) ' ...
+                  'at time t.'],t,hmin);
+          
+          solver_output = odefinalize(solver_name, sol,...
+                                      outputFcn, outputArgs,...
+                                      printstats, [nsteps, nfailed, nfevals,...
+                                                   npds, ndecomps, nsolves],...
+                                      nout, tout, yout,...
+                                      haveEventFcn, teout, yeout, ieout,...
+                                      {kvec,dif3d,idxNonNegative});
+          if nargout > 0
+            varargout = solver_output;
+          end  
+          return;
+        else
+          abshlast = absh;
+          absh = max(0.3 * absh, hmin);
+          h = tdir * absh;
+          done = false;
+
+          difRU = cumprod((kI - 1 - kJ*(absh/abshlast)) ./ kI) * difU;
+          dif(:,K) = dif(:,K) * difRU(K,K);
+          
+          hinvGak = h * invGa(k);
+          nconhk = 0;
+        end
+        Miter = Mt - hinvGak * dfdy;
+        if Mtype == 4
+          Miter = Miter + dMpsidy;
+        end
+        if DAE
+          RowScale = 1 ./ max(abs(Miter),[],2);
+          Miter = sparse(one2neq,one2neq,RowScale) * Miter;
+        end
+        % DAN:
+        if iterativo
+          % do nothing
+        else
+          if issparse(Miter)
+            [L,U,P,Q,R] = lu(Miter);
+          else  
+            [L,U,p] = lu(Miter,'vector');
+          end  
+        ndecomps = ndecomps + 1;        
+        end % if iterativo
+        havrate = false;
+      end   
+    end     % end of while loop for getting ynew
+    
+    % difkp1 is now the backward difference of ynew of order k+1.
+    if normcontrol
+      err = (norm(difkp1) * invwt) * erconst(k);
+    else
+      err = norm(difkp1 .* invwt,inf) * erconst(k);
+    end
+    if nonNegative && (err <= rtol) && any(ynew(idxNonNegative)<0)
+      if normcontrol
+        errNN = norm( max(0,-ynew(idxNonNegative)) ) * invwt;
+      else
+        errNN = norm( max(0,-ynew(idxNonNegative)) ./ thresholdNonNegative, inf);
+      end
+      if errNN > rtol
+        err = errNN;
+      end
+    end
+    
+    if err > rtol                       % Failed step
+      nfailed = nfailed + 1;            
+      if absh <= hmin
+        warning('MATLAB:ode15s:IntegrationTolNotMet',['Failure at t=%e.  ' ...
+                'Unable to meet integration tolerances without reducing ' ...
+                'the step size below the smallest value allowed (%e) ' ...
+                'at time t.'],t,hmin);
+
+        solver_output = odefinalize(solver_name, sol,...
+                                    outputFcn, outputArgs,...
+                                    printstats, [nsteps, nfailed, nfevals,...
+                                                 npds, ndecomps, nsolves],...
+                                    nout, tout, yout,...
+                                    haveEventFcn, teout, yeout, ieout,...
+                                    {kvec,dif3d,idxNonNegative});          
+        if nargout > 0
+          varargout = solver_output;
+        end  
+        return;
+      end
+      
+      abshlast = absh;
+      if nofailed
+        nofailed = false;
+        hopt = absh * max(0.1, 0.833*(rtol/err)^(1/(k+1))); % 1/1.2
+        if k > 1
+          if normcontrol
+            errkm1 = (norm(dif(:,k) + difkp1) * invwt) * erconst(k-1);
+          else
+            errkm1 = norm((dif(:,k) + difkp1) .* invwt,inf) * erconst(k-1);
+          end
+          hkm1 = absh * max(0.1, 0.769*(rtol/errkm1)^(1/k)); % 1/1.3
+          if hkm1 > hopt
+            hopt = min(absh,hkm1);      % don't allow step size increase
+            k = k - 1;
+            K = 1:k;
+          end
+        end
+        absh = max(hmin, hopt);
+      else
+        absh = max(hmin, 0.5 * absh);
+      end
+      h = tdir * absh;
+      if absh < abshlast
+        done = false;
+      end
+      
+      difRU = cumprod((kI - 1 - kJ*(absh/abshlast)) ./ kI) * difU;
+      dif(:,K) = dif(:,K) * difRU(K,K);
+      
+      hinvGak = h * invGa(k);
+      nconhk = 0;
+      Miter = Mt - hinvGak * dfdy;
+      if Mtype == 4
+        Miter = Miter + dMpsidy;
+      end      
+      if DAE
+        RowScale = 1 ./ max(abs(Miter),[],2);
+        Miter = sparse(one2neq,one2neq,RowScale) * Miter;
+      end
+      
+      %DAN:
+      if iterativo
+          % do nothing
+      else
+        if issparse(Miter)
+          [L,U,P,Q,R] = lu(Miter);
+        else   
+          [L,U,p] = lu(Miter,'vector');
+        end
+        ndecomps = ndecomps + 1;          
+      end % if iterativo
+      havrate = false;
+      
+    else                                % Successful step
+      break;
+      
+    end
+  end % while true
+  nsteps = nsteps + 1;                  
+  
+  dif(:,k+2) = difkp1 - dif(:,k+1);
+  dif(:,k+1) = difkp1;
+  for j = k:-1:1
+    dif(:,j) = dif(:,j) + dif(:,j+1);
+  end
+  
+  NNreset_dif = false;
+  if nonNegative && any(ynew(idxNonNegative) < 0)
+    NNidx = idxNonNegative(ynew(idxNonNegative) < 0); % logical indexing
+    ynew(NNidx) = 0;
+    if normcontrol
+      normynew = norm(ynew);
+    end
+    NNreset_dif = true;
+  end   
+  
+  if haveEventFcn
+    [te,ye,ie,valt,stop] = odezero(@ntrp15s,eventFcn,eventArgs,valt,...
+                                   t,y,tnew,ynew,t0,h,dif,k,idxNonNegative);
+    if ~isempty(te)
+      if output_sol || (nargout > 2)
+        teout = [teout, te];
+        yeout = [yeout, ye];
+        ieout = [ieout, ie];
+      end
+      if stop               % Stop on a terminal event. 
+        % Adjust the interpolation data to [t te(end)].                 
+        taux = te(end) - (0:k)*(te(end) - t);
+        yaux = ntrp15s(taux,t,y,tnew,ynew,h,dif,k,idxNonNegative);
+        for j=2:k+1
+          yaux(:,j:k+1) = yaux(:,j-1:k) - yaux(:,j:k+1);
+        end
+        dif(:,1:k) = yaux(:,2:k+1);        
+        tnew = te(end);
+        ynew = ye(:,end);
+        h = tnew - t;
+        done = true;
+      end
+    end
+  end
+
+  if output_sol
+    nout = nout + 1;
+    if nout > length(tout)
+      tout = [tout, zeros(1,chunk)];  % requires chunk >= refine
+      yout = [yout, zeros(neq,chunk)];    
+      kvec = [kvec, zeros(1,chunk)];
+      dif3d = cat(3,dif3d, zeros(neq,maxk+2,chunk));
+    end
+    tout(nout) = tnew;
+    yout(:,nout) = ynew;
+    kvec(nout) = k;
+    dif3d(:,:,nout) = dif;        
+  end   
+  
+  if output_ty || haveOutputFcn 
+    switch outputAt
+     case 'SolverSteps'        % computed points, no refinement
+      nout_new = 1;
+      tout_new = tnew;
+      yout_new = ynew;
+     case 'RefinedSteps'       % computed points, with refinement
+      tref = t + (tnew-t)*S;
+      nout_new = refine;
+      tout_new = [tref, tnew];
+      yout_new = [ntrp15s(tref,[],[],tnew,ynew,h,dif,k,idxNonNegative), ynew];
+     case 'RequestedPoints'    % output only at tspan points
+      nout_new =  0;
+      tout_new = [];
+      yout_new = [];
+      while next <= ntspan  
+        if tdir * (tnew - tspan(next)) < 0
+          if haveEventFcn && stop     % output tstop,ystop
+            nout_new = nout_new + 1;
+            tout_new = [tout_new, tnew];
+            yout_new = [yout_new, ynew];            
+          end
+          break;
+        end
+        nout_new = nout_new + 1;       
+        tout_new = [tout_new, tspan(next)];
+        if tspan(next) == tnew
+          yout_new = [yout_new, ynew];            
+        else  
+          yout_new = [yout_new, ntrp15s(tspan(next),[],[],tnew,ynew,h,dif,k,...
+              idxNonNegative)];
+        end  
+        next = next + 1;
+      end
+    end
+    
+    if nout_new > 0
+      if output_ty
+        oldnout = nout;
+        nout = nout + nout_new;
+        if nout > length(tout)
+          tout = [tout, zeros(1,chunk)];  % requires chunk >= refine
+          yout = [yout, zeros(neq,chunk)];
+        end
+        idx = oldnout+1:nout;        
+        tout(idx) = tout_new;
+        yout(:,idx) = yout_new;
+      end
+      if haveOutputFcn
+        stop = feval(outputFcn,tout_new,yout_new(outputs,:),'',outputArgs{:});
+        if stop
+          done = true;
+        end  
+      end     
+    end  
+  end
+  
+  if done
+    break
+  end
+
+  klast = k;
+  abshlast = absh;
+  nconhk = min(nconhk+1,maxk+2);
+  if nconhk >= k + 2
+    temp = 1.2*(err/rtol)^(1/(k+1));
+    if temp > 0.1
+      hopt = absh / temp;
+    else
+      hopt = 10*absh;
+    end
+    kopt = k;
+    if k > 1
+      if normcontrol
+        errkm1 = (norm(dif(:,k)) * invwt) * erconst(k-1);
+      else
+        errkm1 = norm(dif(:,k) .* invwt,inf) * erconst(k-1);
+      end
+      temp = 1.3*(errkm1/rtol)^(1/k);
+      if temp > 0.1
+        hkm1 = absh / temp;
+      else
+        hkm1 = 10*absh;
+      end
+      if hkm1 > hopt 
+        hopt = hkm1;
+        kopt = k - 1;
+      end
+    end
+    if k < maxk
+      if normcontrol
+        errkp1 = (norm(dif(:,k+2)) * invwt) * erconst(k+1);
+      else
+        errkp1 = norm(dif(:,k+2) .* invwt,inf) * erconst(k+1);
+      end
+      temp = 1.4*(errkp1/rtol)^(1/(k+2));
+      if temp > 0.1
+        hkp1 = absh / temp;
+      else
+        hkp1 = 10*absh;
+      end
+      if hkp1 > hopt 
+        hopt = hkp1;
+        kopt = k + 1;
+      end
+    end
+    if hopt > absh
+      absh = hopt;
+      if k ~= kopt
+        k = kopt;
+        K = 1:k;
+      end
+    end
+  end
+  
+  % Advance the integration one step.
+  t = tnew;
+  y = ynew;
+  if NNreset_dif  
+    % Used dif for unperturbed solution to select order and interpolate.  
+    % In perturbing ynew, defined NNidx.  Use now to reset dif to move along 
+    % constraint.
+    dif(NNidx,:) = 0;      
+  end
+  if normcontrol
+    normy = normynew;
+  end
+  Jcurrent = Jconstant;
+  switch Mtype
+  case {0,1}
+    Mcurrent = true;                    % Constant mass matrix I or M.
+  case 2
+    % M(t) has already been evaluated at tnew in Mtnew.
+    Mt = Mtnew;
+    Mcurrent = true;
+  case {3,4}  % state dependent
+    % M(t,y) has not yet been evaluated at the accepted ynew.
+    Mcurrent = false;
+  end
+  
+end % while ~done
+
+solver_output = odefinalize(solver_name, sol,...
+                            outputFcn, outputArgs,...
+                            printstats, [nsteps, nfailed, nfevals,...
+                                         npds, ndecomps, nsolves],...
+                            nout, tout, yout,...
+                            haveEventFcn, teout, yeout, ieout,...
+                            {kvec,dif3d,idxNonNegative});
+if nargout > 0
+  varargout = solver_output;
+end  
+
+% DAN:
+% FINE NUOVA ODE15S by Bertaccini
+%
